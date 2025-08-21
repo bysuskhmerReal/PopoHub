@@ -1,1 +1,2 @@
-return tostring(1.9.4)
+-- file: last version
+return "1.9.4"
