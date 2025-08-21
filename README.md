@@ -17,7 +17,7 @@
 ## 📥 Get Script 
 - Last version 
 ```Lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/1.9.4"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/last%20version%20Load"))()
 ```
 - Version
 ```Lua
