@@ -17,12 +17,12 @@
 ## 📥 Get Script 
 - Last version 
 ```Lua
-loadstring(game:HttpGet("url" .. "lastversion"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/1.9.4"))()
 ```
 - Version
 ```Lua
 local Version = 1.9.4
-loadstring(game:HttpGet("url" .. Version))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/" .. Version))()
 ```
 
 ---
