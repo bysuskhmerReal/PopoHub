@@ -22,7 +22,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren
 - Version
 ```Lua
 local Version = 1.9.4
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/" .. Version))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/" .. tostring(Version)))()
 ```
 
 ---
