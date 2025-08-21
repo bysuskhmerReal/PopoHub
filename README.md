@@ -19,6 +19,9 @@
 ```Lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/last%20version%20Load"))()
 ```
+
+---
+
 - Version
 ```Lua
 local Version = 1.9.4
