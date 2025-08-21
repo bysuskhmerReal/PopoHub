@@ -15,8 +15,14 @@
 ---
 
 ## 📥 Get Script 
+- Last version 
 ```Lua
-Coming Soon
+loadstring(game:HttpGet("url" .. "lastversion"))()
+```
+- Version
+```Lua
+local Version = 1.9.4
+loadstring(game:HttpGet("url" .. Version))()
 ```
 
 ---
