@@ -11,6 +11,7 @@
 ✅ Added more scripts  
 ✅ Fixed **UI bugs**  
 ✅ Fixed **Noclip error**  
+✅ Key system 2 day
 
 ---
 
@@ -37,6 +38,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren
 ## ⚠️ Note
 - Beware of fake skid steers
 - Mokren Will pull IP You to create a table ranker
+- Mokren Use may be roblox Your account is banned, please use a new account.
 
 ## Contact
 
