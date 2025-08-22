@@ -40,4 +40,4 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren
 
 ## Contact
 
-➡️ [Telegram](httpa://t.me/@bysuskhmerRZ)
+➡️ [Telegram](https://t.me/@bysuskhmerRZ)
