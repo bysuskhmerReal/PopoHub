@@ -37,3 +37,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren
 ## ⚠️ Note
 - Beware of fake skid steers
 - Mokren Will pull IP You to create a table ranker
+
+## Contact
+
+[Telegram](httpa://t.me/@bysuskhmerRZ)
