@@ -3,6 +3,7 @@
 
 🔒 This is the **Original Mokren Script**  
 ⚠️ Do not re-upload / sell without permission  
+👁️ Copyright ©️ 
 
 ---
 
