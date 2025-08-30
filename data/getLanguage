@@ -1,0 +1,3 @@
+function get(id)
+return Language[currentLang][id]
+end
