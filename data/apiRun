@@ -1,0 +1,74 @@
+function music(idPut)
+        local Sound = Instance.new("Sound")
+        Sound.Name = "VengMusic"
+        Sound.SoundId = "rbxassetid://" .. idPut
+        Sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        Sound.Volume = 1
+        Sound:Play()
+end
+
+function noti(title, content, duration)
+    music("124951621656853")
+    WindUI:Notify({
+    Title = title,
+    Content = content,
+    Duration = duration,
+})
+
+function run(scriptUrl)
+    local HttpService = game:GetService("HttpService")
+    local urlLower = scriptUrl:lower()
+    local typescript = "Unknown"
+
+    if string.find(urlLower, "github") then
+        typescript = "Github"
+    elseif string.find(urlLower, "pastebin") then
+        typescript = "Pastebin"
+    elseif string.find(urlLower, "gist") then
+        typescript = "Gist"
+    elseif string.find(urlLower, "hastebin") then
+        typescript = "Hastebin"
+    elseif string.find(urlLower, "ghostbin") then
+        typescript = "Ghostbin"
+    elseif string.find(urlLower, "controlc") then
+        typescript = "ControlC"
+    elseif string.find(urlLower, "rentry") then
+        typescript = "Rentry"
+    elseif string.find(urlLower, "sourcebin") then
+        typescript = "SourceBin"
+    elseif string.find(urlLower, "pastie") then
+        typescript = "Pastie"
+    elseif string.find(urlLower, "haste.host") then
+        typescript = "HasteHost"
+    elseif string.find(urlLower, "mokren.pages.dev") then
+        typescript = "MokrenAPI"
+    end
+
+    noti("Script Run", "Loading")
+
+    local startTime = os.clock()
+
+    local success, err = pcall(function()
+        local data = game:HttpGet(scriptUrl)
+
+        -- ករណី JSON response
+        local isJson, parsed = pcall(function()
+            return HttpService:JSONDecode(data)
+        end)
+
+        if isJson and parsed.code then
+            loadstring(parsed.code)()
+        else
+            loadstring(data)()
+        end
+    end)
+
+    local endTime = os.clock()
+    local elapsedTime = string.format("%.2f", endTime - startTime)
+
+    if success then
+        noti("Script Successful", "Time Script done: " .. elapsedTime .. "s")
+    else
+        noti("Script Error", "Error: " .. err .. "/Timer : " .. elapsedTime .. "s")
+    end
+end
