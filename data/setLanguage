@@ -1,0 +1,6 @@
+function setLanguage(lang)
+if Language[lang] then
+currentLang = lang
+writefile(fileName, lang)
+end
+end
