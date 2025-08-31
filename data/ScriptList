@@ -1,0 +1,15 @@
+AddScript({
+    Title = "Rejoin Game",
+    Type = "button",
+    isURL = false,
+    link = [[game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)]],
+    tab = t3
+})
+
+AddScript({
+    Title = "FPS Counter",
+    Type = "button",
+    isURL = true,
+    link = "https://mokren.pages.dev/api/run?uid=sOYB4wbzbhFVaADxjLOSqxvyhlozdnb",
+    tab = t3
+})
