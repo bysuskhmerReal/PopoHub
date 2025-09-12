@@ -16,7 +16,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHu
 
 - Version
 ```Lua
-local Version = 1.9.4
+local Version = 1.0
 loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/POPO%20" .. tostring(Version) .. ".txt"))()
 ```
 
