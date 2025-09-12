@@ -9,7 +9,7 @@
 ## 📥 Get Script 
 - Last version 
 ```Lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/last%20version%20Load"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/POPO%201.0.txt"))()
 ```
 
 ---
@@ -17,7 +17,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren
 - Version
 ```Lua
 local Version = 1.9.4
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/mokren/refs/heads/main/mokren/version/" .. tostring(Version)))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/POPO%20" .. tostring(Version) .. ".txt"))()
 ```
 
 ---
