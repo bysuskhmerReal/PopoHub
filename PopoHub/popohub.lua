@@ -212,7 +212,7 @@ local function run(scriptUrl)
     isRunning = false  -- mark as finished
 end
 
-Window:Tag({Title="v1.0",Color=Color3.fromHex("#30ff6a")})
+Window:Tag({Title="v1.1",Color=Color3.fromHex("#30ff6a")})
 
 local t1=Window:Tab({Title="Player",Icon="user",Locked=false})
 
@@ -960,6 +960,12 @@ local Dropdown = t2:Dropdown({
 })
 
 -- Usage
+Addgame("Volleyball Legends", {
+    function(sec)
+        AddScriptGame(sec, "Volleyball Legends", "https://raw.githubusercontent.com/scriptshubzeck/Zeckhubv1/refs/heads/main/zeckhub")
+    end
+})
+
 Addgame("99 nights in the forest", {
     function(sec)
         AddScriptGame(sec, "99 nights in the forest (1)", "https://raw.githubusercontent.com/Qiwikox12/stubrawl/refs/heads/main/99Night.txt")
