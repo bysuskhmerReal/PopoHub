@@ -87,45 +87,121 @@ local ESPObjects={}
 
 -- window
 local Window = WindUI:CreateWindow({
-    Title = "PopoHub | "..name,
-    Icon = "rbxassetid://109391626514519",
-    Author = "by bysuskhmer",
-    Folder = folderName,
+    Title = "PopoHUB",
+    Icon = "cat", -- lucide icon. optional
+    Author = "by .bysuskhmer", -- optional
     Size = UDim2.fromOffset(480, 360),
-    Transparent = true,
-    Theme = "Dark",
-    Resizable = true,
-    SideBarWidth = 200,
-    BackgroundImageTransparency = 0.42,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    Background = "rbxassetid://103726525643231",
-    KeySystem = { 
-        Key = { "78474","POPOX",name },
-        Note = "Enter Key System.",
-        URL = "https://t.me/+qLcOpLQydK5mZTg9",
-        SaveKey = true,
-    },
-})
-
-Window:EditOpenButton({
-    Title = "POPO HUB",
-    Icon = "eye",
-    CornerRadius = UDim.new(0,5),
-    StrokeThickness = 1,
-    Color = ColorSequence.new(
-        Color3.fromHex("FF0F7B"), 
-        Color3.fromHex("F89B29")
-    ),
-    OnlyMobile = false,
-    Enabled = true,
-    Draggable = true,
 })
 
 Window:DisableTopbarButtons({
     "Close", 
+    "Minimize", 
     "Fullscreen",
 })
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SmallTopLeftButton"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Container (draggable)
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0,50,0,50) -- small button
+container.Position = UDim2.new(0,10,0,10) -- top-left
+container.BackgroundTransparency = 1
+container.Parent = screenGui
+
+-- Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1,0,1,0)
+button.Text = "Click"
+button.TextScaled = true
+button.Font = Enum.Font.SourceSansBold
+button.BackgroundColor3 = Color3.fromRGB(0,0,0) -- black background
+button.TextColor3 = Color3.fromRGB(255,255,255)
+button.AutoButtonColor = true
+button.Parent = container
+
+-- Rounded corner
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1,0)
+corner.Parent = button
+
+-- Rainbow text effect
+spawn(function()
+    local rainbowColors = {
+        Color3.fromRGB(255,0,0),    -- red
+        Color3.fromRGB(255,127,0),  -- orange
+        Color3.fromRGB(255,255,0),  -- yellow
+        Color3.fromRGB(0,255,0),    -- green
+        Color3.fromRGB(0,0,255),    -- blue
+        Color3.fromRGB(75,0,130),   -- indigo
+        Color3.fromRGB(148,0,211)   -- violet
+    }
+    local i = 1
+    while true do
+        button.TextColor3 = rainbowColors[i]
+        i = i + 1
+        if i > #rainbowColors then i = 1 end
+        wait(0.1)
+    end
+end)
+
+-- Click function
+button.MouseButton1Click:Connect(function()
+    Window:Toggle()
+end)
+
+-- ==== Draggable Mobile Button ====
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    container.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+button.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = container.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                -- snap to nearest horizontal edge
+                local viewportSize = workspace.CurrentCamera.ViewportSize
+                local snapX = (container.AbsolutePosition.X + container.AbsoluteSize.X/2 > viewportSize.X/2)
+                    and (viewportSize.X - container.AbsoluteSize.X - 10) or 10
+                local newPos = UDim2.new(0,snapX,0,math.clamp(container.AbsolutePosition.Y,10,viewportSize.Y-container.AbsoluteSize.Y-10))
+                TweenService:Create(container,TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Position=newPos}):Play()
+            end
+        end)
+    end
+end)
+
+button.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
 local function music(idPut)
         local Sound = Instance.new("Sound")
@@ -964,7 +1040,7 @@ local Dropdown = t2:Dropdown({
 })
 
 -- Usage
-Addgame("Volleyball Legends", {
+Addgame("Volleyball Legends (Zeckhubv1)", {
     function(sec)
         AddScriptGame(sec, "Volleyball Legends", "https://raw.githubusercontent.com/scriptshubzeck/Zeckhubv1/refs/heads/main/zeckhub")
     end
@@ -972,10 +1048,10 @@ Addgame("Volleyball Legends", {
 
 Addgame("99 nights in the forest", {
     function(sec)
-        AddScriptGame(sec, "99 nights in the forest (1)", "https://raw.githubusercontent.com/Qiwikox12/stubrawl/refs/heads/main/99Night.txt")
+        AddScriptGame(sec, "99 nights in the forest (Qiwikox12)", "https://raw.githubusercontent.com/Qiwikox12/stubrawl/refs/heads/main/99Night.txt")
     end,
     function(sec)
-        AddScriptGame(sec, "99 nights in the forest (2)", "https://rawscripts.net/raw/99-Nights-in-the-Forest-Kill-Aura-Bring-Items-and-more-42703")
+        AddScriptGame(sec, "99 nights in the forest (VapeVoidware)", "https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua")
     end
 })
 
@@ -1341,3 +1417,117 @@ LocalPlayer.CharacterAdded:Connect(function(char)
         pcall(function() char:WaitForChild("HumanoidRootPart", 2).CFrame = SAFE_CF end)
     end
 end)
+
+--== Settings Tab ==--
+local settings = Window:Tab({
+    Title = "Settings",
+    Icon = "settings",
+    Locked = false
+})
+
+settings:Paragraph({
+    Title = "Customize Theme",
+    Desc = "Select your Theme",
+    Image = "palette",
+    ImageSize = 20,
+    Color = "White"
+})
+
+--== Variables ==--
+local canchangetheme = true
+local canchangedropdown = true
+local savedThemeFile = "Popo_SelectedTheme.txt" -- save file
+
+--== Functions Save/Load ==--
+local function loadSavedTheme()
+    if isfile(savedThemeFile) then
+        return readfile(savedThemeFile)
+    end
+    return nil
+end
+
+local function saveTheme(theme)
+    writefile(savedThemeFile, theme)
+end
+
+--== Build theme list dynamically from WindUI ==--
+local themes = {}
+for themeName, _ in pairs(WindUI:GetThemes()) do
+    table.insert(themes, themeName)
+end
+table.sort(themes)
+
+--== Load last saved theme ==--
+local lastTheme = loadSavedTheme()
+if lastTheme and table.find(themes,lastTheme) then
+    WindUI:SetTheme(lastTheme)
+end
+
+--== Create Dropdown UI ==--
+local themeDropdown = settings:Dropdown({
+    Title = "Select Theme",
+    Values = themes,
+    SearchBarEnabled = true,
+    MenuWidth = 280,
+    Value = lastTheme or "Dark",
+    Callback = function(theme)
+        canchangedropdown = false
+        WindUI:SetTheme(theme)
+        saveTheme(theme) -- auto save selected theme
+        WindUI:Notify({
+            Title = "Theme Applied",
+            Content = theme,
+            Icon = "palette",
+            Duration = 2
+        })
+        canchangedropdown = true
+    end
+})
+
+--== Transparency Slider ==--
+local transparencySlider = settings:Slider({
+    Title = "Transparency",
+    Value = { 
+        Min = 0,
+        Max = 1,
+        Default = 0.2,
+    },
+    Step = 0.1,
+    Callback = function(value)
+        WindUI.TransparencyValue = tonumber(value)
+        Window:ToggleTransparency(tonumber(value) > 0)
+    end
+})
+
+--== Dark Mode Toggle ==--
+local ThemeToggle = settings:Toggle({
+    Title = "Enable Dark Mode",
+    Desc = "Use dark color scheme",
+    Value = (lastTheme == "Dark"), -- sync with saved theme
+    Callback = function(state)
+        if canchangetheme then
+            local theme = state and "Dark" or "Light"
+            WindUI:SetTheme(theme)
+            saveTheme(theme) -- save when toggle
+            if canchangedropdown then
+                themeDropdown:Select(theme)
+            end
+        end
+    end
+})
+
+--== Listen for Theme Change ==--
+WindUI:OnThemeChange(function(theme)
+    canchangetheme = false
+    ThemeToggle:Set(theme == "Dark")
+    canchangetheme = true
+end)
+
+--== Footer ==--
+settings:Paragraph({
+    Title = "PopoHub ✓",
+    Desc = "Creator by @bysuskhmer",
+    Image = "crown",
+    ImageSize = 20,
+    Color = "White"
+})
