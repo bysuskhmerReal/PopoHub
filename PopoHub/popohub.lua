@@ -1,5 +1,6 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+local function PopoHub(administration)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
@@ -87,16 +88,26 @@ local ESPObjects={}
 
 -- window
 local Window = WindUI:CreateWindow({
-    Title = "PopoHUB",
-    Icon = "cat", -- lucide icon. optional
-    Author = "by .bysuskhmer", -- optional
+    Title = "Popo Hub",
+    Icon = "cat", -- lucide icon
+    Author = "by .roblox",
+    Folder = folderName,
     Size = UDim2.fromOffset(480, 360),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Crimson",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = false,
+    ScrollBarEnabled = false,
     KeySystem = {                                                   
-        Note = "Get Key for Opne Popo Hub Script key 1 = 2 day",        
+        Note = "Enter Key for Opne Script PopoHub.",        
         API = {                                                     
-            { -- pandadevelopment
+            { 
                 Type = "pandadevelopment", -- type
-                ServiceId = "PopoHUB", -- service id
+                ServiceId = "scriptkeyhub", -- service id
             },                                                      
         },                                                          
     },
@@ -108,23 +119,128 @@ Window:Tag({
     Radius = 5,
 })
 
-Window:Tag({
-    Title = "Key System",
+local PingTag = Window:Tag({
+    Title = "Ping 0ms",
     Color = Color3.fromRGB(0, 0, 255), -- blue
     Radius = 5,
 })
 
-Window:Tag({
-    Title = "PopoHub",
+local FpsTag = Window:Tag({
+    Title = "0 FPS",
     Color = Color3.fromRGB(255, 255, 0), -- yellow
     Radius = 5,
 })
+
+local Players = game:GetService("Players")
+local Stats = game:GetService("Stats")
+local LocalPlayer = Players.LocalPlayer
+
+-- Timer: ចាប់ពេលចូល
+local startTime = tick()
+
+-- Create Tags
+local PosTag = Window:Tag({
+    Title = "Pos: 0,0,0",
+    Color = Color3.fromRGB(0,255,255),
+    Radius = 5,
+})
+
+local ToolTag = Window:Tag({
+    Title = "Tool: None",
+    Color = Color3.fromRGB(255, 165, 0),
+    Radius = 5,
+})
+
+local MemTag = Window:Tag({
+    Title = "Memory: 0 MB",
+    Color = Color3.fromRGB(0,255,0),
+    Radius = 5,
+})
+
+local TimeTag = Window:Tag({
+    Title = "Time: 0s",
+    Color = Color3.fromRGB(255,255,255),
+    Radius = 5,
+})
+
+local PlayerCountTag = Window:Tag({
+    Title = "Players: 0",
+    Color = Color3.fromRGB(255, 0, 255),
+    Radius = 5,
+})
+
+-- Function គណនា FPS
+local fps = 0
+local lastTime = tick()
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    local currentTime = tick()
+    fps = math.floor(1 / (currentTime - lastTime))
+    lastTime = currentTime
+end)
+
+task.spawn(function()
+	while true do
+		-- ping (ms) របស់ LocalPlayer
+		local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+
+		-- update Title
+		FpsTag:SetTitle(fps .. " FPS")
+		PingTag:SetTitle("Ping " .. ping .. "ms")
+		
+
+		-- Player count
+		local playerCount = #game.Players:GetPlayers()
+
+	local char = LocalPlayer.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local pos = char.HumanoidRootPart.Position
+			PosTag:SetTitle(("Pos: %d,%d,%d"):format(pos.X, pos.Y, pos.Z))
+		end
+
+		-- Tool Equipped
+		local backpack = LocalPlayer.Backpack
+		local charTools = {}
+		if char then
+			for _,tool in ipairs(char:GetChildren()) do
+				if tool:IsA("Tool") then
+					table.insert(charTools, tool.Name)
+				end
+			end
+		end
+		for _,tool in ipairs(backpack:GetChildren()) do
+			if tool:IsA("Tool") then
+				table.insert(charTools, tool.Name)
+			end
+		end
+		if #charTools > 0 then
+			ToolTag:SetTitle("Tool: " .. table.concat(charTools,", "))
+		else
+			ToolTag:SetTitle("Tool: None")
+		end
+
+		-- Memory Usage (Estimate CPU/GPU)
+		local memory = math.floor(Stats:GetTotalMemoryUsageMb())
+		MemTag:SetTitle("Memory: " .. memory .. " MB")
+
+		-- Timer Play game
+		local playTime = math.floor(tick() - startTime)
+		TimeTag:SetTitle("Time: " .. playTime .. "s")
+		PlayerCountTag:SetTitle("Players: " .. playerCount)
+
+		task.wait(1) -- update half second
+	end
+end)
 
 Window:DisableTopbarButtons({
     "Minimize", 
     "Fullscreen",
 })
 
+--                        ↓ Special name     ↓ Icon     ↓ Callback                         ↓ Order
+
+
+-- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -135,13 +251,14 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SmallTopLeftButton"
-screenGui.ResetOnSpawn = false
+screenGui.ResetOnSpawn = false 
 screenGui.Parent = playerGui
 
--- Container (draggable)
+-- Container
 local container = Instance.new("Frame")
-container.Size = UDim2.new(0,50,0,50) -- small button
-container.Position = UDim2.new(0,10,0,10) -- top-left
+container.Size = UDim2.new(0,100,0,50)
+container.Position = UDim2.new(0,10,0,10)
+container.BackgroundColor3 = Color3.fromRGB(50,50,50)
 container.BackgroundTransparency = 1
 container.Parent = screenGui
 
@@ -151,12 +268,12 @@ button.Size = UDim2.new(1,0,1,0)
 button.Text = "Hide"
 button.TextScaled = true
 button.Font = Enum.Font.SourceSansBold
-button.BackgroundColor3 = Color3.fromRGB(0,0,0) -- black background
+button.BackgroundColor3 = Color3.fromRGB(0,0,0)
 button.TextColor3 = Color3.fromRGB(255,255,255)
-button.AutoButtonColor = true
 button.Parent = container
+button.Visible = true
 
--- Rounded corner
+-- Rounded corners
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0,10)
 corner.Parent = button
@@ -164,54 +281,27 @@ corner.Parent = button
 -- Rainbow text effect
 spawn(function()
     local rainbowColors = {
-        Color3.fromRGB(255,0,0),    -- red
-        Color3.fromRGB(255,127,0),  -- orange
-        Color3.fromRGB(255,255,0),  -- yellow
-        Color3.fromRGB(0,255,0),    -- green
-        Color3.fromRGB(0,0,255),    -- blue
-        Color3.fromRGB(75,0,130),   -- indigo
-        Color3.fromRGB(148,0,211)   -- violet
+        Color3.fromRGB(255,0,0),
+        Color3.fromRGB(255,127,0),
+        Color3.fromRGB(255,255,0),
+        Color3.fromRGB(0,255,0),
+        Color3.fromRGB(0,0,255),
+        Color3.fromRGB(75,0,130),
+        Color3.fromRGB(148,0,211)
     }
     local i = 1
     while true do
-        button.TextColor3 = rainbowColors[i]
-        i = i + 1
-        if i > #rainbowColors then i = 1 end
-        wait(0.1)
+        if button and button.Parent then
+            button.TextColor3 = rainbowColors[i]
+            i = i + 1
+            if i > #rainbowColors then i = 1 end
+        end
+        task.wait(0.1)
     end
 end)
 
-local ClickTimer = false
+-- Toggle visibility when clicked
 
--- Click function
-button.MouseButton1Click:Connect(function()
-if button.Text == "Popo Destroyed" then
-
-else
-  if ClickTimer == false then
-    Window:Toggle()
-    ClickTimer = true
-    wait(0.7)
-    ClickTimer = false
-    else
-    button.Text = "Too fast"
-    end
- end
-end)
-
-Window:OnClose(function()
-    button.Text = "Show"
-end)
-
-Window:OnOpen(function()
-    button.Text = "Hide"
-end)
-
-Window:OnDestroy(function()
-    button.Text = "Popo Destroyed"
-end)
-
--- ==== Draggable Mobile Button ====
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -253,6 +343,40 @@ UserInputService.InputChanged:Connect(function(input)
         update(input)
     end
 end)
+
+local ClickTimer = false
+
+-- Click function
+button.MouseButton1Click:Connect(function()
+if button.Text == "Popo Destroyed" then
+
+else
+  if ClickTimer == false then
+    Window:Toggle()
+    ClickTimer = true
+    wait(0.7)
+    ClickTimer = false
+    else
+    button.Text = "Too fast"
+    end
+ end
+end)
+
+Window:OnClose(function()
+    button.Text = "Show"
+end)
+
+Window:OnOpen(function()
+    button.Text = "Hide"
+end)
+
+Window:OnDestroy(function()
+    button.Text = "Popo Destroyed"
+end)
+
+Window:CreateTopbarButton("ShowToggle", "mouse-pointer-click",    function()
+ button.Visible = not button.Visible
+ end, 990)
 
 local function music(idPut)
         local Sound = Instance.new("Sound")
@@ -339,7 +463,7 @@ local function run(scriptUrl)
     isRunning = false  -- mark as finished
 end
 
-local t1=Window:Tab({Title="Player",Icon="user",Locked=false})
+local t1=Window:Tab({Title="Local Player",Icon="user",Locked=false})
 
 -- util
 local function getHumanoid()
@@ -1193,66 +1317,177 @@ local Toggle = t4:Toggle({
     end
 })
 
-local t5=Window:Tab({Title="Player",Icon="dollar-sign",Locked=false})
+local t5 = Window:Tab({Title="Player", Icon="user-cog", Locked=false})
 
--- Full fixed spectate + teleport code (works with t5 UI)
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- === helper: get player names for dropdown ===
+-- Safe teleport height
+local SAFE_Y = 500
+local SAFE_CF = CFrame.new(0, SAFE_Y, 0)
+local SAFE_PART_POS = Vector3.new(0, SAFE_Y - 0.5, 0)
+
+-- State
+local selectedPlayerName = nil
+local viewing = false
+local originalCFrame = nil
+local savedPartStates = {}
+local savedPlatformStand = nil
+local safePart = nil
+
+-- Helper: get player names
 local function getPlayerNames()
     local list = {}
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            table.insert(list, plr.Name)
-        end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then table.insert(list, p.Name) end
     end
     return list
 end
 
--- UI state
-local selectedPlayerName = nil
+-- Save character state
+local function saveCharacterState(char)
+    savedPartStates = {}
+    for _, inst in ipairs(char:GetDescendants()) do
+        if inst:IsA("BasePart") then
+            savedPartStates[inst] = {Class="BasePart", Transparency=inst.Transparency, CanCollide=inst.CanCollide, Anchored=inst.Anchored}
+        elseif inst:IsA("Decal") or inst:IsA("Texture") then
+            savedPartStates[inst] = {Class="Decal", Transparency=inst.Transparency}
+        end
+    end
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    savedPlatformStand = hum and hum.PlatformStand or nil
+end
+
+-- Make character invisible (but not anchored HumanoidRootPart)
+local function setCharacterSpectateSafe(char)
+    for _, inst in ipairs(char:GetDescendants()) do
+        if inst:IsA("BasePart") and inst.Name ~= "HumanoidRootPart" then
+            pcall(function() inst.Transparency=1 inst.CanCollide=false end)
+        elseif inst:IsA("Decal") or inst:IsA("Texture") then
+            pcall(function() inst.Transparency=1 end)
+        end
+    end
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if hum then pcall(function() hum.PlatformStand=false end) end
+end
+
+-- Restore character state
+local function restoreCharacterState(char)
+    for inst, state in pairs(savedPartStates) do
+        if inst and inst.Parent then
+            if state.Class=="BasePart" then
+                pcall(function()
+                    inst.Transparency=state.Transparency or 0
+                    inst.CanCollide=state.CanCollide~=nil and state.CanCollide or true
+                    inst.Anchored=state.Anchored~=nil and state.Anchored or false
+                end)
+            elseif state.Class=="Decal" then
+                pcall(function() inst.Transparency=state.Transparency or 0 end)
+            end
+        end
+    end
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if hum and savedPlatformStand~=nil then
+        pcall(function() hum.PlatformStand=savedPlatformStand end)
+    end
+    savedPartStates={}
+    savedPlatformStand=nil
+end
+
+-- Toggle View Player
+local function ToggleViewPlayer(state)
+    viewing = state
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        warn("Local character not ready")
+        viewing=false
+        return
+    end
+    if state then
+        if not selectedPlayerName then
+            warn("Select a player first")
+            viewing=false
+            return
+        end
+
+        originalCFrame=LocalPlayer.Character.HumanoidRootPart.CFrame
+
+        saveCharacterState(LocalPlayer.Character)
+        setCharacterSpectateSafe(LocalPlayer.Character)
+
+        -- teleport to high safe Y
+        pcall(function() LocalPlayer.Character.HumanoidRootPart.CFrame=SAFE_CF end)
+
+        -- create invisible safe platform
+        safePart=Instance.new("Part")
+        safePart.Size=Vector3.new(10,1,10)
+        safePart.Anchored=true
+        safePart.CanCollide=true
+        safePart.Transparency=1
+        safePart.Position=SAFE_PART_POS
+        safePart.Name="Spectate_SafePlatform"
+        safePart.Parent=workspace
+
+        -- camera follow target
+        local target=Players:FindFirstChild(selectedPlayerName)
+        if target and target.Character then
+            local th=target.Character:FindFirstChildWhichIsA("Humanoid")
+            if th then pcall(function() Camera.CameraType=Enum.CameraType.Custom Camera.CameraSubject=th end) end
+        end
+    else
+        -- restore camera
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") then
+            pcall(function() Camera.CameraType=Enum.CameraType.Custom Camera.CameraSubject=LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") end)
+        end
+        -- teleport back
+        if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            pcall(function() LocalPlayer.Character.HumanoidRootPart.CFrame=originalCFrame end)
+        end
+        -- restore state
+        if LocalPlayer.Character then restoreCharacterState(LocalPlayer.Character) end
+        -- destroy safe part
+        if safePart then pcall(function() safePart:Destroy() end) safePart=nil end
+    end
+end
 
 -- Dropdown
-local Dropdown = t5:Dropdown({
-    Title = "Select (PlayerList)",
-    Values = getPlayerNames(),
-    Value = getPlayerNames()[1],
-    Callback = function(option)
-        selectedPlayerName = option
+local Dropdown=t5:Dropdown({
+    Title="Select Player",
+    Values=getPlayerNames(),
+    Value=getPlayerNames()[1],
+    Callback=function(option)
+        selectedPlayerName=option
+        if viewing then
+            ToggleViewPlayer(false)
+            task.wait(0.05)
+            ToggleViewPlayer(true)
+        end
     end
 })
 
-Players.PlayerAdded:Connect(function()
-    Dropdown:Refresh(getPlayerNames(), true)
-end)
-Players.PlayerRemoving:Connect(function()
-    Dropdown:Refresh(getPlayerNames(), true)
-end)
-
--- Teleport once button
+Players.PlayerAdded:Connect(function() Dropdown:Refresh(getPlayerNames(), true) end)
+Players.PlayerRemoving:Connect(function() Dropdown:Refresh(getPlayerNames(), true) end)
+-- teleport once button
 local Button = t5:Button({
-    Title = "Teleport",
-    Locked = false,
+    Title = "Teleport To Player",
     Callback = function()
         if not selectedPlayerName then
             warn("No player selected")
             return
         end
         local target = Players:FindFirstChild(selectedPlayerName)
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") 
+            and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,2,0)
         else
             warn("Target or local character not ready")
         end
     end
 })
 
--- Loop teleport toggle
+-- loop teleport toggle
 local loopTeleport = false
-local ToggleLoop = t5:Toggle({
+local LoopToggle = t5:Toggle({
     Title = "Loop Teleport",
     Type = "Checkbox",
     Default = false,
@@ -1261,213 +1496,160 @@ local ToggleLoop = t5:Toggle({
     end
 })
 
+-- loop teleport task
 task.spawn(function()
     while true do
         if loopTeleport and selectedPlayerName then
             local target = Players:FindFirstChild(selectedPlayerName)
-            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") 
+                and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,2,0)
             end
         end
         task.wait(0.5)
     end
 end)
 
--- === Safe spectate/View player (fixed) ===
-local SAFE_CF = CFrame.new(0, -500, 0)               -- safe place under map (not super far)
-local SAFE_PART_POS = Vector3.new(0, -505, 0)       -- platform under the player
-local viewing = false
-local originalCFrame = nil
-local savedPartStates = {}      -- map part -> state
-local savedPlatformStand = nil
-local safePart = nil
+-- View Player Toggle
+local ToggleView=t5:Toggle({
+    Title="View Player (Safe)",
+    Type="Checkbox",
+    Default=false,
+    Callback=function(state) ToggleViewPlayer(state) end
+})
 
--- Save parts/humanoid state so we can restore later
-local function saveCharacterState(char)
-    savedPartStates = {}
-    for _, inst in ipairs(char:GetDescendants()) do
-        if inst:IsA("BasePart") then
-            savedPartStates[inst] = {
-                Class = "BasePart",
-                Transparency = inst.Transparency,
-                CanCollide = inst.CanCollide,
-                Anchored = inst.Anchored
-            }
-        elseif inst:IsA("Decal") or inst:IsA("Texture") then
-            savedPartStates[inst] = {
-                Class = "Decal",
-                Transparency = inst.Transparency
-            }
-        end
+-- Handle respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if viewing then
+        task.wait(0.2)
+        saveCharacterState(char)
+        setCharacterSpectateSafe(char)
+        pcall(function() char:WaitForChild("HumanoidRootPart",2).CFrame=SAFE_CF end)
     end
-    local hum = char:FindFirstChildWhichIsA("Humanoid")
-    if hum then
-        savedPlatformStand = hum.PlatformStand
-    else
-        savedPlatformStand = nil
-    end
-end
+end)
 
--- Make character invisible, non-collidable and anchored (safe)
-local function setCharacterInvisibleAndAnchor(char)
-    for _, inst in ipairs(char:GetDescendants()) do
-        if inst:IsA("BasePart") then
-            pcall(function()
-                inst.Transparency = 1
-                inst.CanCollide = false
-                inst.Anchored = true
-            end)
-        elseif inst:IsA("Decal") or inst:IsA("Texture") then
-            pcall(function() inst.Transparency = 1 end)
-        end
-    end
-    local hum = char:FindFirstChildWhichIsA("Humanoid")
-    if hum then
-        pcall(function() hum.PlatformStand = true end)
-    end
-end
+local t6 = Window:Tab({Title="Tools / Hub", Icon="pencil-ruler", Locked=false})
 
--- Restore saved part/humanoid state (best-effort)
-local function restoreCharacterState(char)
-    for inst, state in pairs(savedPartStates) do
-        if inst and inst.Parent then
-            if state.Class == "BasePart" then
-                pcall(function()
-                    inst.Transparency = state.Transparency or 0
-                    inst.CanCollide = state.CanCollide ~= nil and state.CanCollide or true
-                    inst.Anchored = state.Anchored ~= nil and state.Anchored or false
-                end)
-            elseif state.Class == "Decal" then
-                pcall(function() inst.Transparency = state.Transparency or 0 end)
-            end
-        end
-    end
-    local hum = char:FindFirstChildWhichIsA("Humanoid")
-    if hum and savedPlatformStand ~= nil then
-        pcall(function() hum.PlatformStand = savedPlatformStand end)
-    end
-    savedPartStates = {}
-    savedPlatformStand = nil
-end
+t6:Paragraph({
+    Title = "Script",
+    Desc = "Script Hub ",
+    Image = "shield-alert",
+    ImageSize = 20,
+    Color = "White"
+})
 
-local ToggleView = t5:Toggle({
-    Title = "View Player (Safe)",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        viewing = state
-
-        -- require character
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            warn("Local character not ready")
-            viewing = false
-            ToggleView:Set(false) -- if your UI supports Set to change state visually
-            return
-        end
-
-        if state then
-            -- must have a target selected
-            if not selectedPlayerName then
-                warn("Select a player first")
-                viewing = false
-                ToggleView:Set(false)
-                return
-            end
-
-            -- save original
-            originalCFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
-
-            -- save state and apply invisible/anchored
-            saveCharacterState(LocalPlayer.Character)
-            setCharacterInvisibleAndAnchor(LocalPlayer.Character)
-
-            -- teleport to safe area under map
-            pcall(function()
-                LocalPlayer.Character.HumanoidRootPart.CFrame = SAFE_CF
-            end)
-
-            -- create safe platform
-            safePart = Instance.new("Part")
-            safePart.Name = "Spectate_SafePlatform"
-            safePart.Size = Vector3.new(50, 1, 50)
-            safePart.Anchored = true
-            safePart.CanCollide = true
-            safePart.Position = SAFE_PART_POS
-            safePart.Parent = workspace
-
-            -- set camera to target (if exists)
-            local target = Players:FindFirstChild(selectedPlayerName)
-            if target and target.Character then
-                local th = target.Character:FindFirstChildWhichIsA("Humanoid")
-                if th then
-                    pcall(function()
-                        Camera.CameraType = Enum.CameraType.Custom
-                        Camera.CameraSubject = th
-                    end)
-                end
-            end
-
-        else
-            -- stop viewing: restore camera, restore character state and teleport back
-            -- restore camera subject to local humanoid (if exists)
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") then
-                pcall(function()
-                    Camera.CameraType = Enum.CameraType.Custom
-                    Camera.CameraSubject = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-                end)
-            end
-
-            -- teleport back to original position if saved
-            if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                pcall(function()
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = originalCFrame
-                end)
-            end
-
-            -- restore part properties
-            if LocalPlayer.Character then
-                restoreCharacterState(LocalPlayer.Character)
-            end
-
-            -- destroy safe part
-            if safePart then
-                pcall(function() safePart:Destroy() end)
-                safePart = nil
-            end
-        end
+local Button = t6:Button({
+    Title = "Explorer",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua")
     end
 })
 
--- update camera continuously while viewing (handles target respawn)
-task.spawn(function()
-    while true do
-        if viewing and selectedPlayerName then
-            local target = Players:FindFirstChild(selectedPlayerName)
-            if target and target.Character then
-                local th = target.Character:FindFirstChildWhichIsA("Humanoid")
-                if th then
-                    pcall(function()
-                        Camera.CameraType = Enum.CameraType.Custom
-                        Camera.CameraSubject = th
-                    end)
-                end
-            end
-        end
-        task.wait(0.12)
+local Button = t6:Button({
+    Title = "Infinite Yield",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
     end
-end)
+})
 
-LocalPlayer.CharacterAdded:Connect(function(char)
-    if viewing then
-        -- small delay to let parts exist
-        task.wait(0.2)
-        saveCharacterState(char)
-        setCharacterInvisibleAndAnchor(char)
-        pcall(function() char:WaitForChild("HumanoidRootPart", 2).CFrame = SAFE_CF end)
+local Button = t6:Button({
+    Title = "GhostPlayer",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/GhostPlayer352/Test4/main/GhostHub")
     end
-end)
+})
 
---== Settings Tab ==--
+local Button = t6:Button({
+    Title = "Swamp Monster Hub",
+    Locked = false,
+    Callback = function()
+        run("https://pastefy.app/2tC7nRAK/raw")
+    end
+})
+
+t6:Paragraph({
+    Title = "Script",
+    Desc = "Script Troll ",
+    Image = "rabbit",
+    ImageSize = 20,
+    Color = "White"
+})
+
+local Button = t6:Button({
+    Title = "saMtiek2",
+    Locked = false,
+    Callback = function()
+        run("https://pastebin.com/raw/saMtiek2")
+    end
+})
+
+local Button = t6:Button({
+    Title = "TrollGui",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/Bysuskhmerops62/AVG/refs/heads/main/Fe%20Troll%20Fling")
+    end
+})
+
+local Button = t6:Button({
+    Title = "Auto Fling Player",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Auto%20Fling%20Player")
+    end
+})
+
+t6:Paragraph({
+    Title = "Script",
+    Desc = "Script ToolsHelp ",
+    Image = "pencil-ruler",
+    ImageSize = 20,
+    Color = "White"
+})
+
+local Button = t6:Button({
+    Title = "Position finder gui",
+    Locked = false,
+    Callback = function()
+        run("https://pastebin.com/raw/BjViRedU")
+    end
+})
+
+local Button = t6:Button({
+    Title = "Turtle spy",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/Bysuskhmerops62/script-/refs/heads/main/source.lua.txt")
+    end
+})
+
+local Button = t6:Button({
+    Title = "SimpleSpy",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/UhGbaaaa/Android-Value/main/SimpleSpyMobile.txt")
+    end
+})
+
+local Button = t6:Button({
+    Title = "OctoSpy",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/Bysuskhmerops62/script-/refs/heads/main/Octo%7ESpy.lua.txt")
+    end
+})
+
+local Button = t6:Button({
+    Title = "Gui Make",
+    Locked = false,
+    Callback = function()
+        run("https://raw.githubusercontent.com/Bysuskhmerops62/Key-System-/refs/heads/main/Gui%20Maker.txt")
+    end
+})
+
 local settings = Window:Tab({
     Title = "Settings",
     Icon = "settings",
@@ -1482,12 +1664,18 @@ settings:Paragraph({
     Color = "White"
 })
 
+local UIS = game:GetService("UserInputService")
+
+if UIS.TouchEnabled then
+     button.Visible = true
+end
+
 local Toggle = settings:Toggle({
     Title = "Show Toggle Mobile",
     Type = "Checkbox",
-    Default = false,
+    Default = button.Visible or true,
     Callback = function(state) 
-        
+        button.Visible = state
     end
 })
 
@@ -1598,11 +1786,28 @@ WindUI:OnThemeChange(function(theme)
     canchangetheme = true
 end)
 
---== Footer ==--
-settings:Paragraph({
-    Title = "PopoHub ✓",
-    Desc = "Creator by @bysuskhmer",
-    Image = "crown",
-    ImageSize = 20,
-    Color = "White"
+
+-- administration 
+end
+
+WindUI:Popup({
+    Title = "PopoHub ",
+    Icon = "shield-alert",
+    Content = "For weak phones, please do not run because this code requires strong phone power.",
+    Buttons = {
+        {
+            Title = "Cancel",
+            Callback = function() end,
+            Variant = "Tertiary",
+        },
+        {
+            Title = "Continue",
+            Icon = "check",
+            Callback = function()
+            
+             PopoHub()
+             end,
+            Variant = "Primary",
+        }
+    }
 })
