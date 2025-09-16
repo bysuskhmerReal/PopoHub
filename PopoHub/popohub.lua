@@ -91,10 +91,36 @@ local Window = WindUI:CreateWindow({
     Icon = "cat", -- lucide icon. optional
     Author = "by .bysuskhmer", -- optional
     Size = UDim2.fromOffset(480, 360),
+    KeySystem = {                                                   
+        Note = "Get Key for Opne Popo Hub Script key 1 = 2 day",        
+        API = {                                                     
+            { -- pandadevelopment
+                Type = "pandadevelopment", -- type
+                ServiceId = "PopoHUB", -- service id
+            },                                                      
+        },                                                          
+    },
+})
+
+Window:Tag({
+    Title = "v2",
+    Color = Color3.fromRGB(255, 0, 0), -- red
+    Radius = 5,
+})
+
+Window:Tag({
+    Title = "Key System",
+    Color = Color3.fromRGB(0, 0, 255), -- blue
+    Radius = 5,
+})
+
+Window:Tag({
+    Title = "PopoHub",
+    Color = Color3.fromRGB(255, 255, 0), -- yellow
+    Radius = 5,
 })
 
 Window:DisableTopbarButtons({
-    "Close", 
     "Minimize", 
     "Fullscreen",
 })
@@ -122,7 +148,7 @@ container.Parent = screenGui
 -- Button
 local button = Instance.new("TextButton")
 button.Size = UDim2.new(1,0,1,0)
-button.Text = "Click"
+button.Text = "Hide"
 button.TextScaled = true
 button.Font = Enum.Font.SourceSansBold
 button.BackgroundColor3 = Color3.fromRGB(0,0,0) -- black background
@@ -132,7 +158,7 @@ button.Parent = container
 
 -- Rounded corner
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(1,0)
+corner.CornerRadius = UDim.new(0,10)
 corner.Parent = button
 
 -- Rainbow text effect
@@ -155,9 +181,34 @@ spawn(function()
     end
 end)
 
+local ClickTimer = false
+
 -- Click function
 button.MouseButton1Click:Connect(function()
+if button.Text == "Popo Destroyed" then
+
+else
+  if ClickTimer == false then
     Window:Toggle()
+    ClickTimer = true
+    wait(0.7)
+    ClickTimer = false
+    else
+    button.Text = "Too fast"
+    end
+ end
+end)
+
+Window:OnClose(function()
+    button.Text = "Show"
+end)
+
+Window:OnOpen(function()
+    button.Text = "Hide"
+end)
+
+Window:OnDestroy(function()
+    button.Text = "Popo Destroyed"
 end)
 
 -- ==== Draggable Mobile Button ====
@@ -287,8 +338,6 @@ local function run(scriptUrl)
 
     isRunning = false  -- mark as finished
 end
-
-Window:Tag({Title="v1.1",Color=Color3.fromHex("#30ff6a")})
 
 local t1=Window:Tab({Title="Player",Icon="user",Locked=false})
 
@@ -1423,6 +1472,32 @@ local settings = Window:Tab({
     Title = "Settings",
     Icon = "settings",
     Locked = false
+})
+
+settings:Paragraph({
+    Title = "Popo Toggle",
+    Desc = "Toggle for PC And Mobile",
+    Image = "crown",
+    ImageSize = 20,
+    Color = "White"
+})
+
+local Toggle = settings:Toggle({
+    Title = "Show Toggle Mobile",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        
+    end
+})
+
+local Keybind = settings:Keybind({
+    Title = "Toggle For PC",
+    Desc = "Keybind to open ui",
+    Value = "G",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
 })
 
 settings:Paragraph({
