@@ -1,13 +1,168 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
-local function PopoHub(administration)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
-
 local name = LocalPlayer.Name
+local folderName = "POPODATA/".. name .. "/"
+local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local admin = false
+if name == "bysuskhmer_100" then
+    admin = true
+else
+
+end
+
+local function music(idPut, id)
+        local Sound = Instance.new("Sound")
+        Sound.Name = id or "SONG POPO"
+        Sound.SoundId = "rbxassetid://" .. idPut
+        Sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        Sound.Volume = 1
+        Sound:Play()
+end
+
+local function noti(title, content, duration)
+    music("124951621656853")
+    WindUI:Notify({
+    Title = title or "",
+    Content = content or "",
+    Duration = duration or 3, -- 3 seconds
+})
+end
+
+function SaveFile(Filename, Value)
+    local HttpService = game:GetService("HttpService")
+    local data = HttpService:JSONEncode(Value)
+    writefile(folderName .. Filename, data)
+end
+
+-- Load Function
+function LoadFile(Filename)
+    local HttpService = game:GetService("HttpService")
+    if isfile(folderName .. Filename) then
+        local raw = readfile(folderName .. Filename)
+        -- បម្លែង JSON String ទៅ Table/Value
+        local data = HttpService:JSONDecode(raw)
+        return data
+    else
+        return nil -- file មិនមាន
+    end
+end
+
+-- Check if file exists
+function Check(filename)
+    if isfile(folderName .. filename) then
+        return true
+    else
+        return false
+    end
+end
+
+--// SERVICES
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local TeleportService = game:GetService("TeleportService")
+
+--// SAFE SETTINGS
+local Safe
+if Check("SystemSafe.json") then
+    Safe = LoadFile("SystemSafe.json")
+else
+    Safe = {
+        AllowRejoin = false,
+        AllowKick = false
+    }
+    SaveFile("SystemSafe.json", Safe)
+end
+
+--// NOTIFICATION FUNCTION
+local function ShowNotification(title, text, duration)
+    StarterGui:SetCore("SendNotification", {
+        Title = title or "Alert",
+        Text = text or "",
+        Duration = duration or 5
+    })
+end
+
+--// BLOCK REMOTES
+local blockedRemotes = {"TeleportEvent","AutoRejoinFunction"}
+for _, name in ipairs(blockedRemotes) do
+    local remote = ReplicatedStorage:FindFirstChild(name)
+    if remote then
+        if remote:IsA("RemoteEvent") then
+            local oldFireServer = remote.FireServer
+            remote.FireServer = function(...)
+                ShowNotification("Safe Rejoin", "Blocked RemoteEvent: "..name, 5)
+                if Safe.AllowRejoin then
+                    return oldFireServer(remote, ...)
+                end
+            end
+        elseif remote:IsA("RemoteFunction") then
+            local oldInvokeServer = remote.InvokeServer
+            remote.InvokeServer = function(...)
+                ShowNotification("Safe Rejoin", "Blocked RemoteFunction: "..name, 5)
+                if Safe.AllowRejoin then
+                    return oldInvokeServer(remote, ...)
+                end
+                return nil
+            end
+        end
+    end
+end
+
+--// HOOK TELEPORT & KICK
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+setreadonly(mt,false)
+
+mt.__namecall = newcclosure(function(self,...)
+    local method = getnamecallmethod()
+
+    -- Block TeleportService methods
+    if self == TeleportService and (method == "Teleport" or method == "TeleportToPlaceInstance") then
+        ShowNotification("Safe Rejoin","Blocked Teleport/Rejoin attempt!",5)
+        if Safe.AllowRejoin then
+            return oldNamecall(self,...)
+        else
+            warn("Blocked Teleport / TeleportToPlaceInstance attempt")
+            return nil
+        end
+    end
+
+    -- Block Kick
+    if self == LocalPlayer and method == "Kick" then
+        ShowNotification("Safe Rejoin","Blocked Kick attempt!",5)
+        if Safe.AllowKick then
+            return oldNamecall(self,...)
+        else
+            warn("Blocked Kick attempt")
+            return nil
+        end
+    end
+
+    return oldNamecall(self,...)
+end)
+
+setreadonly(mt,true)
+
+--// BLOCK SERVER KICK VIA PLAYERREMOVING
+Players.PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer and not Safe.AllowKick then
+        ShowNotification("Safe Rejoin","Blocked server kick attempt!",5)
+        warn("Blocked PlayerRemoving attempt")
+    end
+end)
+
+print("✅ Full Safe Rejoin + Hook Kick + Block Teleport Activated")
+print("AllowRejoin =", Safe.AllowRejoin, "| AllowKick =", Safe.AllowKick)
+
+local function PopoHub(administration)
 
 local function isNumber(str)
   if tonumber(str) ~= nil or str == 'inf' then
@@ -15,75 +170,8 @@ local function isNumber(str)
   end
 end
 
-local Players = game:GetService("Players")
-local MarketplaceService = game:GetService("MarketplaceService")
-
-local premium = false
-local player = Players.LocalPlayer
-local gamepassID = 1456281488
-
-
-local function checkGamepass()
-    local success, hasPass = pcall(function()
-        return MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassID)
-    end)
-
-    if success then
-        if hasPass then
-            premium = true
-            print(" Player Owns Gamepass!")
-        else
-            premium = false
-            print(" Player DOES NOT own Gamepass.")
-        end
-    else
-        warn(" Failed to check Gamepass: " .. tostring(hasPass))
-    end
-end
-
-checkGamepass()
-
-local whitelist = { "BTSfreefire0" }
-local player = game.Players.LocalPlayer
-
-for _, name in ipairs(whitelist) do
-    if player.Name == name then
-        premium = true
-        break
-    end
-end
-
-wait(0.5)
-
-local lock = not premium
-
--- Settings file path (Executor must support isfile/writefile/readfile)
-local folderName = "PopoHub_"..name
-local settingsFile = folderName.."/esp_settings.json"
-
-local function loadSettings()
-    if isfile and isfile(settingsFile) then
-        return HttpService:JSONDecode(readfile(settingsFile))
-    else
-        return {}
-    end
-end
-
-local function saveSettings(data)
-    if makefolder and not isfolder(folderName) then
-        makefolder(folderName)
-    end
-    writefile(settingsFile,HttpService:JSONEncode(data))
-end
-
-local settings = loadSettings()
-
--- default variables
 local loopSpeed,loopJump,noclipEnabled,ESPEnabled,infJumpEnabled=false,false,false,false,false
 local targetSpeed,targetJump=16,50
-local ESPColor=Color3.fromRGB(0,255,0)
-local ESPCategories={"ESP DISPLAY"}
-local selectedFont=Enum.Font[settings.Font or "SourceSans"] or Enum.Font.SourceSans
 local ESPObjects={}
 
 -- window
@@ -112,6 +200,14 @@ local Window = WindUI:CreateWindow({
         },                                                          
     },
 })
+
+script1()
+script2()
+script3()
+
+end
+
+function script1()
 
 Window:Tag({
     Title = "v2",
@@ -237,10 +333,6 @@ Window:DisableTopbarButtons({
     "Fullscreen",
 })
 
---                        ↓ Special name     ↓ Icon     ↓ Callback                         ↓ Order
-
-
--- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -371,96 +463,18 @@ Window:OnOpen(function()
 end)
 
 Window:OnDestroy(function()
-    button.Text = "Popo Destroyed"
+    button.Text = "Gui Destroyed"
 end)
 
 Window:CreateTopbarButton("ShowToggle", "mouse-pointer-click",    function()
  button.Visible = not button.Visible
  end, 990)
 
-local function music(idPut)
-        local Sound = Instance.new("Sound")
-        Sound.Name = "VengMusic"
-        Sound.SoundId = "rbxassetid://" .. idPut
-        Sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-        Sound.Volume = 1
-        Sound:Play()
-end
-
-local function noti(title, content, duration)
-    music("124951621656853")
-    WindUI:Notify({
-    Title = title or "",
-    Content = content or "",
-    Duration = duration or 3, -- 3 seconds
-})
-end
-
 local isRunning = false 
 
-local function run(scriptUrl)
-    if isRunning then
-        noti("Script Blocked", "Another script is already running!")
-        return
-    end
-
-    isRunning = true  -- mark as running
-
-    local HttpService = game:GetService("HttpService")
-    local urlLower = scriptUrl:lower()
-    local typescript = "Unknown"
-
-    if string.find(urlLower, "github") then
-        typescript = "Github"
-    elseif string.find(urlLower, "pastebin") then
-        typescript = "Pastebin"
-    elseif string.find(urlLower, "gist") then
-        typescript = "Gist"
-    elseif string.find(urlLower, "hastebin") then
-        typescript = "Hastebin"
-    elseif string.find(urlLower, "ghostbin") then
-        typescript = "Ghostbin"
-    elseif string.find(urlLower, "controlc") then
-        typescript = "ControlC"
-    elseif string.find(urlLower, "rentry") then
-        typescript = "Rentry"
-    elseif string.find(urlLower, "sourcebin") then
-        typescript = "SourceBin"
-    elseif string.find(urlLower, "pastie") then
-        typescript = "Pastie"
-    elseif string.find(urlLower, "haste.host") then
-        typescript = "HasteHost"
-    elseif string.find(urlLower, "mokren.pages.dev") then
-        typescript = "MokrenAPI"
-    end
-
-    noti("Script Run", "Loading")
-
-    local startTime = os.clock()
-
-    local success, err = pcall(function()
-        local data = game:HttpGet(scriptUrl)
-        local isJson, parsed = pcall(function()
-            return HttpService:JSONDecode(data)
-        end)
-
-        if isJson and parsed.code then
-            loadstring(parsed.code)()
-        else
-            loadstring(data)()
-        end
-    end)
-
-    local endTime = os.clock()
-    local elapsedTime = string.format("%.2f", endTime - startTime)
-
-    if success then
-        noti("Script Successful", "Time Script done: " .. elapsedTime .. "s")
-    else
-        noti("Script Error", "Error: " .. err .. "/Timer : " .. elapsedTime .. "s")
-    end
-
-    isRunning = false  -- mark as finished
+function run(scriptUrl)
+noti("Script Run")
+loadstring(game:HttpGet(scriptUrl))()
 end
 
 local t1=Window:Tab({Title="Local Player",Icon="user",Locked=false})
@@ -550,9 +564,11 @@ UIS.JumpRequest:Connect(function()
     end
 end)
 
+local hum=getHumanoid()
+
 -- GUI controls
 t1:Input({
-    Title="Enter Speed",Value=tostring(targetSpeed),
+    Title="Enter Speed",Value=tostring(hum.WalkSpeed),
     Callback=function(v)
         targetSpeed=tonumber(v) or 16
         local hum=getHumanoid()
@@ -562,7 +578,7 @@ t1:Input({
 t1:Toggle({Title="Loop Speed",Default=false,Callback=function(s)loopSpeed=s end})
 
 t1:Input({
-    Title="Enter Jump",Value=tostring(targetJump),
+    Title="Enter Jump",Value=tostring(hum.JumpPower),
     Callback=function(v)
         targetJump=tonumber(v) or 50
         local hum=getHumanoid()
@@ -620,40 +636,64 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
---// SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
---// SETTINGS
-local settings = {}
-if isfile and readfile and writefile then
-    if isfile("esp_settings.json") then
-        settings = game:GetService("HttpService"):JSONDecode(readfile("esp_settings.json"))
-    end
-end
-local function saveSettings(tbl)
-    if writefile then
-        writefile("esp_settings.json", game:GetService("HttpService"):JSONEncode(tbl))
-    end
-end
-
---// DEFAULT
+--// VARIABLES
 local ESPEnabled = false
-local ESPColor = settings.Color and Color3.fromRGB(settings.Color[1], settings.Color[2], settings.Color[3]) or Color3.fromRGB(255,0,0)
-local ESPCategories = settings.Cats or {"ESP USERNAME"}
-local selectedFont = Enum.Font[settings.Font or "SourceSans"]
+local ESPCategories = {"ESP USERNAME"}
 local ESPObjects = {}
 
---// UI
-local SectionESP = t1:Section({ 
+local defaultColor = Color3.fromRGB(255,0,0)
+local defaultFont = Enum.Font.SourceSans
+
+local settings -- defined outside if/else
+
+--// SAVE/LOAD JSON FUNCTIONS
+local function SaveSettings()
+    local saveData = {
+        ESPTYPE = settings.ESPTYPE,
+        ESPCOLOR = {r = settings.ESPCOLOR.R, g = settings.ESPCOLOR.G, b = settings.ESPCOLOR.B},
+        ESPFONT = settings.ESPFONT.Name -- save only the font name
+    }
+    SaveFile("ESPSETTINGS.json", saveData)
+end
+
+local function LoadSettings()
+    if Check("ESPSETTINGS.json") then
+        local dataSave = LoadFile("ESPSETTINGS.json")
+        settings = {
+            ESPTYPE = dataSave.ESPTYPE or ESPCategories,
+            ESPCOLOR = dataSave.ESPCOLOR and Color3.new(dataSave.ESPCOLOR.r, dataSave.ESPCOLOR.g, dataSave.ESPCOLOR.b) or defaultColor,
+            ESPFONT = dataSave.ESPFONT and Enum.Font[dataSave.ESPFONT] or defaultFont
+        }
+    else
+        settings = {
+            ESPTYPE = ESPCategories,
+            ESPCOLOR = defaultColor,
+            ESPFONT = defaultFont
+        }
+        SaveSettings()
+    end
+end
+
+-- load initial settings
+LoadSettings()
+
+local selectedFont = settings.ESPFONT
+local ESPColor = settings.ESPCOLOR
+
+--// UI SECTION
+local SectionESP = t1:Section({
     Title = "ESP | PLAYER",
     TextXAlignment = "Left",
     TextSize = 17,
 })
 
+-- ESP Toggle
 t1:Toggle({
-    Title="ESP Players",Default=ESPEnabled,
+    Title="ESP Players", Default=ESPEnabled,
     Callback=function(state)
         ESPEnabled = state
         if not state then
@@ -665,54 +705,54 @@ t1:Toggle({
     end
 })
 
+-- ESP Colorpicker
 t1:Colorpicker({
     Title="ESP Color",
     Default=ESPColor,
     Callback=function(color)
-        ESPColor=color
-        settings.Color={math.floor(color.R*255),math.floor(color.G*255),math.floor(color.B*255)}
-        saveSettings(settings)
+        ESPColor = color
+        settings.ESPCOLOR = color
+        SaveSettings()
     end
 })
 
+-- ESP Show Dropdown
 t1:Dropdown({
     Title="ESP SHOW",
     Values={"ESP USERNAME","ESP DISPLAY","ESP HP"},
-    Value=ESPCategories,
+    Value=settings.ESPTYPE,
     Multi=true,
     Callback=function(option)
-        ESPCategories=option
-        settings.Cats=option
-        saveSettings(settings)
+        ESPCategories = option
+        settings.ESPTYPE = option
+        SaveSettings()
     end
 })
 
--- font list
-local fonts={
-"Legacy","Arial","ArialBold","SourceSans","SourceSansBold","SourceSansSemibold","SourceSansLight","SourceSansItalic","SourceSansBoldItalic",
-"Bodoni","Garamond","Cartoon","ComicSans","Code","Fantasy","SciFi","Arcade","Highway","Marker","Antique","Gotham","GothamMedium","GothamBold",
-"GothamBlack","GothamSemibold","GothamBook","GothamLight","GothamThin","Roboto","RobotoCondensed","RobotoMono","RobotoBold","RobotoMedium",
-"RobotoLight","RobotoThin","FredokaOne","Fondamento","Creepster","LuckiestGuy","PatrickHand","PermanentMarker","IndieFlower","SpecialElite",
-"TitilliumWeb","Ubuntu","Bangers","JosefinSans","PressStart2P","Nunito","Oswald"
-}
+-- Get all Roblox fonts dynamically
+local fonts = {}
+for _, font in ipairs(Enum.Font:GetEnumItems()) do
+    table.insert(fonts, font.Name)
+end
 
+-- Font Dropdown
 t1:Dropdown({
     Title="ESP Font",
     Values=fonts,
-    Value=settings.Font or "SourceSans",
+    Value=selectedFont.Name, -- current font name
     Multi=false,
     Callback=function(v)
         if Enum.Font[v] then
-            selectedFont=Enum.Font[v]
-            settings.Font=v
-            saveSettings(settings)
+            selectedFont = Enum.Font[v]
+            settings.ESPFONT = selectedFont
+            SaveSettings()
         end
     end
 })
 
 --// FUNCTION CREATE ESP
 local function createESP(plr)
-    if plr==LocalPlayer then return end
+    if plr == LocalPlayer then return end
     if ESPObjects[plr] then ESPObjects[plr]:Destroy() end
 
     local billboard = Instance.new("BillboardGui")
@@ -720,48 +760,49 @@ local function createESP(plr)
     billboard.Size = UDim2.new(0,200,0,50)
     billboard.Name = "ESP_"..plr.Name
 
-    local text = Instance.new("TextLabel",billboard)
+    local text = Instance.new("TextLabel", billboard)
     text.Size = UDim2.new(1,0,1,0)
     text.BackgroundTransparency = 1
     text.TextColor3 = ESPColor
     text.Font = selectedFont
     text.TextScaled = true
 
-    ESPObjects[plr]=billboard
+    ESPObjects[plr] = billboard
 
     local function update()
         local char = plr.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             billboard.Adornee = char:FindFirstChild("HumanoidRootPart")
             local txts = {}
-            if table.find(ESPCategories,"ESP USERNAME") then table.insert(txts,plr.Name) end
-            if table.find(ESPCategories,"ESP DISPLAY") then table.insert(txts,plr.DisplayName) end
+            if table.find(ESPCategories,"ESP USERNAME") then table.insert(txts, plr.Name) end
+            if table.find(ESPCategories,"ESP DISPLAY") then table.insert(txts, plr.DisplayName) end
             if table.find(ESPCategories,"ESP HP") then
                 local hum = char:FindFirstChildOfClass("Humanoid")
-                if hum then table.insert(txts,math.floor(hum.Health).." HP") end
+                if hum then table.insert(txts, math.floor(hum.Health).." HP") end
             end
             text.Text = table.concat(txts," | ")
             text.TextColor3 = ESPColor
             text.Font = selectedFont
         end
     end
+
     RunService.Heartbeat:Connect(function()
         if ESPEnabled and ESPObjects[plr] then
             update()
-            billboard.Parent = game.CoreGui
+            billboard.Parent = game:GetService("CoreGui")
         elseif ESPObjects[plr] then
-            billboard.Parent=nil
+            billboard.Parent = nil
         end
     end)
 end
 
 --// HOOK EVENTS
-for _,plr in ipairs(Players:GetPlayers()) do
+for _, plr in ipairs(Players:GetPlayers()) do
     createESP(plr)
 end
 Players.PlayerAdded:Connect(createESP)
 Players.PlayerRemoving:Connect(function(plr)
-    if ESPObjects[plr] then ESPObjects[plr]:Destroy() ESPObjects[plr]=nil end
+    if ESPObjects[plr] then ESPObjects[plr]:Destroy() ESPObjects[plr] = nil end
 end)
 
 local Section = t1:Section({ 
@@ -770,30 +811,36 @@ local Section = t1:Section({
     TextSize = 17, -- Default Size
 })
 
-local savePath = "MyFontSetting.txt"
-
--- 📝 Get all font names from Enum.Font
+-- Get all font names
+--// Prepare font list
 local fontNames = {}
 for _, font in ipairs(Enum.Font:GetEnumItems()) do
     table.insert(fontNames, font.Name)
 end
 
--- 📌 Load saved font if exist
-local savedFontName = fontNames[1] -- default
-if isfile and isfile(savePath) then
-    local content = readfile(savePath)
-    if Enum.Font[content] then
-        savedFontName = content
-    end
+--// Check and create JSON file if not exists
+if not isfile("FontSettings.json") then
+    local defaultFontName = fontNames[1] -- first font
+    local FontData = {
+        FontGV = defaultFontName
+    }
+    SaveFile("FontSettings.json", FontData)
 end
 
+--// Load saved font
+local DATAFONT = LoadFile("FontSettings.json")
+local selectedFont = Enum.Font[DATAFONT.FontGV] or Enum.Font.SourceSans -- default safe
+
+--// Function to apply font to all GUI elements
 local function applyFont(fontEnum)
     local player = game.Players.LocalPlayer
+    -- PlayerGui
     for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
         if guiObj:IsA("TextLabel") or guiObj:IsA("TextButton") or guiObj:IsA("TextBox") then
             guiObj.Font = fontEnum
         end
     end
+    -- Workspace (if you have Text objects in workspace)
     for _, guiObj in ipairs(workspace:GetDescendants()) do
         if guiObj:IsA("TextLabel") or guiObj:IsA("TextButton") or guiObj:IsA("TextBox") then
             guiObj.Font = fontEnum
@@ -801,31 +848,50 @@ local function applyFont(fontEnum)
     end
 end
 
--- 📝 Apply saved font right away
-applyFont(Enum.Font[savedFontName])
+--// Apply saved font immediately
+applyFont(selectedFont)
 
--- 🎛 Dropdown UI
+--// Create Dropdown UI
 local Dropdown = t1:Dropdown({
     Title = "Select Font",
     Values = fontNames,
-    Value = savedFontName,
+    Value = DATAFONT.FontGV, -- string name
+    Multi = false,
     Callback = function(option)
-        local selectedFont = Enum.Font[option]
-        if not selectedFont then return end
-
-        -- Apply new font
+        local fontEnum = Enum.Font[option] or Enum.Font.SourceSans
+        selectedFont = fontEnum
         applyFont(selectedFont)
-
-        -- Save font name to file
-        if writefile then
-            writefile(savePath, option)
-        end
+        -- save new selection
+        local FontData = {FontGV = option}
+        SaveFile("FontSettings.json", FontData)
     end
 })
 
 Window:SelectTab(1)
 
+end
+
+function script2()
+
 local t2=Window:Tab({Title="Script",Icon="file-code",Locked=false})
+
+local Button = t2:Button({
+    Title = "Rejoin Game",
+    Desc = "Click For To Load Script",
+    Locked = false,
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+    end
+})
+
+local Button = t2:Button({
+    Title = "Rejoin Server",
+    Desc = "Click For To Load Script",
+    Locked = false,
+    Callback = function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+    end
+})
 
 function ScriptAdd(title, raw)
 local Button = t2:Button({
@@ -1033,24 +1099,6 @@ local Button = t2:Button({
 })
 
 ScriptAdd("Fly Car", "https://safetycode-free.vercel.app/api/run?uid=sOVkfQrqmoqsd576b7x")
-
-local Button = t2:Button({
-    Title = "Rejoin Game",
-    Desc = "Click For To Load Script",
-    Locked = false,
-    Callback = function()
-        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-    end
-})
-
-local Button = t2:Button({
-    Title = "Rejoin Server",
-    Desc = "Click For To Load Script",
-    Locked = false,
-    Callback = function()
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
-    end
-})
 
 ScriptAdd("Chat Bypasser", "https://raw.githubusercontent.com/vqmpjayZ/Bypass/8e92f1a31635629214ab4ac38217b97c2642d113/vadrifts")
 ScriptAdd("Webhook Tool", "https://raw.githubusercontent.com/venoxhh/universalscripts/main/webhook_tools")
@@ -1324,7 +1372,7 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 -- Safe teleport height
-local SAFE_Y = 500
+local SAFE_Y = 50000
 local SAFE_CF = CFrame.new(0, SAFE_Y, 0)
 local SAFE_PART_POS = Vector3.new(0, SAFE_Y - 0.5, 0)
 
@@ -1420,10 +1468,10 @@ local function ToggleViewPlayer(state)
 
         -- create invisible safe platform
         safePart=Instance.new("Part")
-        safePart.Size=Vector3.new(10,1,10)
+        safePart.Size=Vector3.new(1000,1,1000)
         safePart.Anchored=true
         safePart.CanCollide=true
-        safePart.Transparency=1
+        safePart.Transparency=0
         safePart.Position=SAFE_PART_POS
         safePart.Name="Spectate_SafePlatform"
         safePart.Parent=workspace
@@ -1527,6 +1575,10 @@ LocalPlayer.CharacterAdded:Connect(function(char)
         pcall(function() char:WaitForChild("HumanoidRootPart",2).CFrame=SAFE_CF end)
     end
 end)
+
+end
+
+function script3()
 
 local t6 = Window:Tab({Title="Tools / Hub", Icon="pencil-ruler", Locked=false})
 
@@ -1650,6 +1702,173 @@ local Button = t6:Button({
     end
 })
 
+t6:Paragraph({
+    Title = "Map",
+    Desc = "Map Teleport and Anti",
+    Image = "rabbit",
+    ImageSize = 20,
+    Color = "White"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local afkBase, timerPart, timerLabel
+local afkTime = 0
+local timerRunning = false
+local timerTask
+local savedCFrame = nil
+local antiAfkTask = nil
+
+-- Create AFK Base + Timer
+local function createAFKBase()
+    afkBase = Instance.new("Part")
+    afkBase.Size = Vector3.new(1000,1,1000)
+    afkBase.Anchored = true
+    afkBase.Position = Vector3.new(0,0,5000)
+    afkBase.Material = Enum.Material.Grass
+    afkBase.Color = Color3.fromRGB(34,139,34)
+    afkBase.Name = "AFK_Base"
+    afkBase.Parent = workspace
+
+    timerPart = Instance.new("Part")
+    timerPart.Size = Vector3.new(10,5,1)
+    timerPart.Anchored = true
+    timerPart.Position = afkBase.Position + Vector3.new(0,5,0)
+    timerPart.Transparency = 1
+    timerPart.CanCollide = false
+    timerPart.Name = "AFK_Timer_Part"
+    timerPart.Parent = workspace
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.Adornee = timerPart
+    billboard.AlwaysOnTop = true
+    billboard.Parent = timerPart
+
+    timerLabel = Instance.new("TextLabel")
+    timerLabel.Size = UDim2.new(1,0,1,0)
+    timerLabel.BackgroundTransparency = 1
+    timerLabel.TextColor3 = Color3.new(1,1,1)
+    timerLabel.TextScaled = true
+    timerLabel.Text = "AFK Timer: 0s"
+    timerLabel.Parent = billboard
+end
+
+-- Destroy AFK Base + Timer
+local function destroyAFKBase()
+    if afkBase then afkBase:Destroy() end
+    if timerPart then timerPart:Destroy() end
+    afkBase, timerPart, timerLabel = nil, nil, nil
+    afkTime = 0
+    timerRunning = false
+end
+
+-- Timer
+local function startTimer()
+    timerRunning = true
+    timerTask = task.spawn(function()
+        while timerRunning do
+            afkTime += 1
+            if timerLabel then
+                timerLabel.Text = "AFK Timer: "..afkTime.."s"
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+local function stopTimer()
+    timerRunning = false
+    timerTask = nil
+end
+
+-- Anti-AFK Jump every 1 minute
+local function startAntiAfkJump()
+    antiAfkTask = task.spawn(function()
+        while true do
+            task.wait(60) -- wait 1 minute
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.Jump = true
+            end
+        end
+    end)
+end
+
+local function stopAntiAfkJump()
+    if antiAfkTask then
+        task.cancel(antiAfkTask)
+        antiAfkTask = nil
+    end
+end
+
+-- Toggle
+local Toggle = t6:Toggle({
+    Title = "Teleport Map Afk",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- Save current position
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                savedCFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            end
+            createAFKBase()
+            -- Teleport to AFK Base
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = afkBase.CFrame + Vector3.new(0,5,0)
+            end
+            startTimer()
+            startAntiAfkJump()
+        else
+            -- Teleport back to saved position
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and savedCFrame then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = savedCFrame
+            end
+            stopTimer()
+            destroyAFKBase()
+            stopAntiAfkJump()
+        end
+    end
+})
+
+local safe = Window:Tab({
+    Title = "Safety and protection",
+    Icon = "shield-check", -- optional
+    Locked = false,
+})
+
+-- Load JSON or create default
+local Safe = LoadFile("SystemSafe.json") or {
+    AllowKick = false,
+    AllowRejoin = false
+}
+
+-- Toggle UI for Allow Kick
+local ToggleKick = safe:Toggle({
+    Title = "Allow Kick",
+    Desc = "They can remove you from the game.",
+    Type = "Checkbox",
+    Default = Safe.AllowKick,
+    Callback = function(state) 
+        Safe.AllowKick = state          -- update Safe
+        SaveFile("SystemSafe.json", Safe)  -- save changes
+    end
+})
+
+-- Toggle UI for Allow Rejoin
+local ToggleRejoin = safe:Toggle({
+    Title = "Allow Rejoin",
+    Desc = "You will enter a new game without permission.",
+    Type = "Checkbox",
+    Default = Safe.AllowRejoin,
+    Callback = function(state) 
+        Safe.AllowRejoin = state        -- update Safe
+        SaveFile("SystemSafe.json", Safe)  -- save changes
+    end
+})
 local settings = Window:Tab({
     Title = "Settings",
     Icon = "settings",
@@ -1667,17 +1886,10 @@ settings:Paragraph({
 local UIS = game:GetService("UserInputService")
 
 if UIS.TouchEnabled then
-     button.Visible = true
-end
-
-local Toggle = settings:Toggle({
-    Title = "Show Toggle Mobile",
-    Type = "Checkbox",
-    Default = button.Visible or true,
-    Callback = function(state) 
-        button.Visible = state
+    if button and button.Visible ~= nil then
+        button.Visible = true
     end
-})
+end
 
 local Keybind = settings:Keybind({
     Title = "Toggle For PC",
@@ -1699,7 +1911,7 @@ settings:Paragraph({
 --== Variables ==--
 local canchangetheme = true
 local canchangedropdown = true
-local savedThemeFile = "Popo_SelectedTheme.txt" -- save file
+local savedThemeFile = folderName .. "/Popo_SelectedTheme.txt" -- save file
 
 --== Functions Save/Load ==--
 local function loadSavedTheme()
@@ -1786,9 +1998,8 @@ WindUI:OnThemeChange(function(theme)
     canchangetheme = true
 end)
 
-
--- administration 
 end
+
 
 WindUI:Popup({
     Title = "PopoHub ",
