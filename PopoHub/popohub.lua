@@ -1,17 +1,18 @@
+function Mobile()
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local name = LocalPlayer.Name
-local folderName = "POPODATA/".. name .. "/"
-local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local folderName = "PopoHub/".. name.. "/"
 local admin = false
 if name == "bysuskhmer_100" then
-    admin = true
+    
 else
 
 end
@@ -40,20 +41,17 @@ function SaveFile(Filename, Value)
     writefile(folderName .. Filename, data)
 end
 
--- Load Function
 function LoadFile(Filename)
     local HttpService = game:GetService("HttpService")
     if isfile(folderName .. Filename) then
         local raw = readfile(folderName .. Filename)
-        -- បម្លែង JSON String ទៅ Table/Value
         local data = HttpService:JSONDecode(raw)
         return data
     else
-        return nil -- file មិនមាន
+        return nil
     end
 end
 
--- Check if file exists
 function Check(filename)
     if isfile(folderName .. filename) then
         return true
@@ -62,12 +60,28 @@ function Check(filename)
     end
 end
 
---// SERVICES
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local TeleportService = game:GetService("TeleportService")
+
+local PopoGui
+
+if Check("PopoMain.json") then
+    PopoGui = LoadFile("PopoMain.json")
+else
+    -- Save
+PopoGui = {
+    Title = "Popo Hub",
+    Version = "v2",
+    SizeGui = 480,
+    SizeGui2 = 360,
+    HideSearchBar = false,
+    Icon = "cat"
+}
+SaveFile("PopoMain.json", PopoGui)
+end
 
 --// SAFE SETTINGS
 local Safe
@@ -176,11 +190,11 @@ local ESPObjects={}
 
 -- window
 local Window = WindUI:CreateWindow({
-    Title = "Popo Hub",
-    Icon = "cat", -- lucide icon
-    Author = "by .roblox",
+    Title = PopoGui.Title,
+    Icon = PopoGui.Icon, -- lucide icon
+    Author = "by .bysuskhmer",
     Folder = folderName,
-    Size = UDim2.fromOffset(480, 360),
+    Size = UDim2.fromOffset(PopoGui.SizeGui, PopoGui.SizeGui2),
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
@@ -188,17 +202,8 @@ local Window = WindUI:CreateWindow({
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
-    HideSearchBar = false,
+    HideSearchBar = PopoGui.HideSearchBar,
     ScrollBarEnabled = false,
-    KeySystem = {                                                   
-        Note = "Enter Key for Opne Script PopoHub.",        
-        API = {                                                     
-            { 
-                Type = "pandadevelopment", -- type
-                ServiceId = "scriptkeyhub", -- service id
-            },                                                      
-        },                                                          
-    },
 })
 
 script1()
@@ -210,7 +215,7 @@ end
 function script1()
 
 Window:Tag({
-    Title = "v2",
+    Title = PopoGui.Version,
     Color = Color3.fromRGB(255, 0, 0), -- red
     Radius = 5,
 })
@@ -440,7 +445,7 @@ local ClickTimer = false
 
 -- Click function
 button.MouseButton1Click:Connect(function()
-if button.Text == "Popo Destroyed" then
+if button.Text == "Gui Destroyed" then
 
 else
   if ClickTimer == false then
@@ -819,7 +824,7 @@ for _, font in ipairs(Enum.Font:GetEnumItems()) do
 end
 
 --// Check and create JSON file if not exists
-if not isfile("FontSettings.json") then
+if not Check("FontSettings.json") then
     local defaultFontName = fontNames[1] -- first font
     local FontData = {
         FontGV = defaultFontName
@@ -1089,17 +1094,8 @@ local Button = t2:Button({
     end
 })
 
-local Button = t2:Button({
-    Title = "Fly {Vehicle}",
-    Desc = "Click For To Load Script",
-    Locked = false,
-    Callback = function()
-        run("https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Vehicle%20Fly%20Gui")
-    end
-})
-
+ScriptAdd("Fly {Vehicle}", "https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Vehicle%20Fly%20Gui")
 ScriptAdd("Fly Car", "https://safetycode-free.vercel.app/api/run?uid=sOVkfQrqmoqsd576b7x")
-
 ScriptAdd("Chat Bypasser", "https://raw.githubusercontent.com/vqmpjayZ/Bypass/8e92f1a31635629214ab4ac38217b97c2642d113/vadrifts")
 ScriptAdd("Webhook Tool", "https://raw.githubusercontent.com/venoxhh/universalscripts/main/webhook_tools")
 ScriptAdd("FPS Counter", "https://mokren.pages.dev/api/run?uid=sOYB4wbzbhFVaADxjLOSqxvyhlozdnb")
@@ -1840,11 +1836,18 @@ local safe = Window:Tab({
     Locked = false,
 })
 
--- Load JSON or create default
-local Safe = LoadFile("SystemSafe.json") or {
+local Safe
+
+if Check("SystemSafe.json") then
+Safe = LoadFile("SystemSafe.json")
+else
+Safe = {
     AllowKick = false,
     AllowRejoin = false
 }
+
+SaveFile("SystemSafe.json", Safe)
+end
 
 -- Toggle UI for Allow Kick
 local ToggleKick = safe:Toggle({
@@ -1911,31 +1914,28 @@ settings:Paragraph({
 --== Variables ==--
 local canchangetheme = true
 local canchangedropdown = true
-local savedThemeFile = folderName .. "/Popo_SelectedTheme.txt" -- save file
 
 --== Functions Save/Load ==--
-local function loadSavedTheme()
-    if isfile(savedThemeFile) then
-        return readfile(savedThemeFile)
-    end
-    return nil
-end
-
-local function saveTheme(theme)
-    writefile(savedThemeFile, theme)
-end
-
---== Build theme list dynamically from WindUI ==--
 local themes = {}
 for themeName, _ in pairs(WindUI:GetThemes()) do
     table.insert(themes, themeName)
 end
 table.sort(themes)
 
---== Load last saved theme ==--
-local lastTheme = loadSavedTheme()
-if lastTheme and table.find(themes,lastTheme) then
-    WindUI:SetTheme(lastTheme)
+local DataKI
+
+if Check("Theme.json") then
+DataKI = LoadFile("Theme.json")
+
+WindUI:SetTheme(DataKI.Theme)
+else
+ DataKI = {
+   Theme = "Crimson"
+}
+
+SaveFile("Theme.json", DataKI)
+
+WindUI:SetTheme(DataKI.Theme)
 end
 
 --== Create Dropdown UI ==--
@@ -1944,17 +1944,18 @@ local themeDropdown = settings:Dropdown({
     Values = themes,
     SearchBarEnabled = true,
     MenuWidth = 280,
-    Value = lastTheme or "Dark",
+    Value = DataKI.Theme or "Crimson",
     Callback = function(theme)
         canchangedropdown = false
         WindUI:SetTheme(theme)
-        saveTheme(theme) -- auto save selected theme
+        DataKI.Theme = theme
         WindUI:Notify({
             Title = "Theme Applied",
             Content = theme,
             Icon = "palette",
             Duration = 2
         })
+        SaveFile("Theme.json", DataKI)
         canchangedropdown = true
     end
 })
@@ -2022,3 +2023,6 @@ WindUI:Popup({
         }
     }
 })
+end
+
+Mobile()
