@@ -1872,13 +1872,12 @@ local ToggleRejoin = safe:Toggle({
         SaveFile("SystemSafe.json", Safe)  -- save changes
     end
 })
-local settings = Window:Tab({
-    Title = "Settings",
-    Icon = "settings",
-    Locked = false
-})
 
-settings:Paragraph({
+local Settings = {
+	local s1 = Window:Tab({Title = "Settings", Icon = "settings",  Locked = false })
+}
+
+Settings.s1:Paragraph({
     Title = "Popo Toggle",
     Desc = "Toggle for PC And Mobile",
     Image = "crown",
@@ -1894,7 +1893,7 @@ if UIS.TouchEnabled then
     end
 end
 
-local Keybind = settings:Keybind({
+local Keybind = Settings.s1:Keybind({
     Title = "Toggle For PC",
     Desc = "Keybind to open ui",
     Value = "G",
@@ -1903,7 +1902,7 @@ local Keybind = settings:Keybind({
     end
 })
 
-settings:Paragraph({
+Settings.s1:Paragraph({
     Title = "Customize Theme",
     Desc = "Select your Theme",
     Image = "palette",
@@ -1939,7 +1938,7 @@ WindUI:SetTheme(DataKI.Theme)
 end
 
 --== Create Dropdown UI ==--
-local themeDropdown = settings:Dropdown({
+local themeDropdown = Settings.s1:Dropdown({
     Title = "Select Theme",
     Values = themes,
     SearchBarEnabled = true,
@@ -1961,7 +1960,7 @@ local themeDropdown = settings:Dropdown({
 })
 
 --== Transparency Slider ==--
-local transparencySlider = settings:Slider({
+local transparencySlider = Settings.s1:Slider({
     Title = "Transparency",
     Value = { 
         Min = 0,
@@ -1975,24 +1974,6 @@ local transparencySlider = settings:Slider({
     end
 })
 
---== Dark Mode Toggle ==--
-local ThemeToggle = settings:Toggle({
-    Title = "Enable Dark Mode",
-    Desc = "Use dark color scheme",
-    Value = (lastTheme == "Dark"), -- sync with saved theme
-    Callback = function(state)
-        if canchangetheme then
-            local theme = state and "Dark" or "Light"
-            WindUI:SetTheme(theme)
-            saveTheme(theme) -- save when toggle
-            if canchangedropdown then
-                themeDropdown:Select(theme)
-            end
-        end
-    end
-})
-
---== Listen for Theme Change ==--
 WindUI:OnThemeChange(function(theme)
     canchangetheme = false
     ThemeToggle:Set(theme == "Dark")
