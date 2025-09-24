@@ -1096,6 +1096,7 @@ local Button = t2:Button({
 
 ScriptAdd("Fly {Vehicle}", "https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Vehicle%20Fly%20Gui")
 ScriptAdd("Fly Car", "https://safetycode-free.vercel.app/api/run?uid=sOVkfQrqmoqsd576b7x")
+ScriptAdd("Jump {PAD}", "https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/Script/Jump%20Pad.txt")
 ScriptAdd("Chat Bypasser", "https://raw.githubusercontent.com/vqmpjayZ/Bypass/8e92f1a31635629214ab4ac38217b97c2642d113/vadrifts")
 ScriptAdd("Webhook Tool", "https://raw.githubusercontent.com/venoxhh/universalscripts/main/webhook_tools")
 ScriptAdd("FPS Counter", "https://mokren.pages.dev/api/run?uid=sOYB4wbzbhFVaADxjLOSqxvyhlozdnb")
@@ -1781,11 +1782,10 @@ local function stopTimer()
     timerTask = nil
 end
 
--- Anti-AFK Jump every 1 minute
 local function startAntiAfkJump()
     antiAfkTask = task.spawn(function()
         while true do
-            task.wait(60) -- wait 1 minute
+            task.wait(60)
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                 LocalPlayer.Character.Humanoid.Jump = true
             end
