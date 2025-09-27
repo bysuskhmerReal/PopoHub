@@ -1,5 +1,52 @@
-function Mobile()
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local VersionRoot = "1.3"
+
+local whatsNew = {
+    "Edit ESP",
+    "Add Font New for ESP",
+    "Auto check Gui new for font game and Gui more",
+    "Edit Teleport Map Afk",
+    "New Script Fly Pad"
+}
+
+local function buildWhatsNew(entries)
+    for i = 1, #entries do
+        entries[i] = "[-] " .. entries[i]
+    end
+    return table.concat(entries, "\n")
+end
+
+local MessageeWhatNew = buildWhatsNew(whatsNew)
+
+print(MessageeWhatNew)
+
+local function music(idPut, id)
+        local Sound = Instance.new("Sound")
+        Sound.Name = id or "SONG POPO"
+        Sound.SoundId = "rbxassetid://" .. idPut
+        Sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        Sound.Volume = 1
+        Sound:Play()
+end
+
+local function noti(title, content, duration, icons)
+    -- ព្យាយាមចាក់តន្ត្រី, បើមាន error វានឹងមិនបាក់ script
+    pcall(function()
+        music("124951621656853")
+    end)
+
+    pcall(function()
+        WindUI:Notify({
+            Title = title or "",
+            Content = content or "",
+            Duration = duration or 3,
+            Icon = icons or "bell",
+        })
+    end)
+end
+
+function PoppHubCom()
 local TeleportService = game:GetService("TeleportService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,44 +58,36 @@ local LocalPlayer = Players.LocalPlayer
 local name = LocalPlayer.Name
 local folderName = "PopoHub/".. name.. "/"
 local admin = false
-if name == "bysuskhmer_100" then
-    
-else
-
-end
-
-local function music(idPut, id)
-        local Sound = Instance.new("Sound")
-        Sound.Name = id or "SONG POPO"
-        Sound.SoundId = "rbxassetid://" .. idPut
-        Sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-        Sound.Volume = 1
-        Sound:Play()
-end
-
-local function noti(title, content, duration)
-    music("124951621656853")
-    WindUI:Notify({
-    Title = title or "",
-    Content = content or "",
-    Duration = duration or 3, -- 3 seconds
-})
-end
 
 function SaveFile(Filename, Value)
     local HttpService = game:GetService("HttpService")
-    local data = HttpService:JSONEncode(Value)
-    writefile(folderName .. Filename, data)
+    local success, err = pcall(function()
+        local data = HttpService:JSONEncode(Value)
+        writefile(folderName .. Filename, data)
+    end)
+
+    if not success then
+        warn("Failed to save file: " .. tostring(err))
+    end
 end
 
 function LoadFile(Filename)
     local HttpService = game:GetService("HttpService")
-    if isfile(folderName .. Filename) then
-        local raw = readfile(folderName .. Filename)
-        local data = HttpService:JSONDecode(raw)
-        return data
+    local filePath = folderName .. Filename
+
+    if isfile(filePath) then
+        local raw = readfile(filePath)
+        local success, data = pcall(function()
+            return HttpService:JSONDecode(raw)
+        end)
+
+        if success and data then
+            return data
+        else
+            return "nii" 
+        end
     else
-        return nil
+        return "nii"
     end
 end
 
@@ -68,19 +107,18 @@ local TeleportService = game:GetService("TeleportService")
 
 local PopoGui
 
-if Check("PopoMain.json") then
-    PopoGui = LoadFile("PopoMain.json")
+if Check("PopoMain_" .. VersionRoot .. ".json") then
+    PopoGui = LoadFile("PopoMain_" .. VersionRoot .. ".json")
 else
-    -- Save
 PopoGui = {
     Title = "Popo Hub",
-    Version = "v2",
+    Version = "v3",
     SizeGui = 480,
     SizeGui2 = 360,
     HideSearchBar = false,
     Icon = "cat"
 }
-SaveFile("PopoMain.json", PopoGui)
+SaveFile("PopoMain_" .. VersionRoot .. ".json", PopoGui)
 end
 
 --// SAFE SETTINGS
@@ -95,7 +133,6 @@ else
     SaveFile("SystemSafe.json", Safe)
 end
 
---// NOTIFICATION FUNCTION
 local function ShowNotification(title, text, duration)
     StarterGui:SetCore("SendNotification", {
         Title = title or "Alert",
@@ -165,7 +202,6 @@ end)
 
 setreadonly(mt,true)
 
---// BLOCK SERVER KICK VIA PLAYERREMOVING
 Players.PlayerRemoving:Connect(function(player)
     if player == LocalPlayer and not Safe.AllowKick then
         ShowNotification("Safe Rejoin","Blocked server kick attempt!",5)
@@ -188,17 +224,41 @@ local loopSpeed,loopJump,noclipEnabled,ESPEnabled,infJumpEnabled=false,false,fal
 local targetSpeed,targetJump=16,50
 local ESPObjects={}
 
+WindUI:AddTheme({
+    Name = "God",
+    Accent = "#FFD700",       -- មាសភ្លឺ
+    Dialog = "#1C1C1C",       -- ខ្មៅចាស់
+    Outline = "#FFFFFF",      -- សស្រស់
+    Text = "#FFFFFF",         -- ស
+    Placeholder = "#CCCCCC",  -- ពណ៌ប្រផេះស្រាល
+    Background = "#0A0A0A",  -- ខ្មៅជ្រៅ
+    Button = "#FFD700",       -- មាស
+    Icon = "#FFFFFF",         -- ស
+})
+
+WindUI:AddTheme({
+    Name = "Hacker",
+    Accent = "#00FF00",      
+    Dialog = "#000000",       -- ខ្មៅ
+    Outline = "#00FF00",      -- បៃតង
+    Text = "#00FF00",         -- បៃតង
+    Placeholder = "#00AA00",  -- បៃតងស្រាល
+    Background = "#0D0D0D",  -- ខ្មៅជ្រៅ
+    Button = "#003300",       -- បៃតងងងឹត
+    Icon = "#00FF00",         -- បៃតង
+})
+
 -- window
-local Window = WindUI:CreateWindow({
+ Window = WindUI:CreateWindow({
     Title = PopoGui.Title,
-    Icon = PopoGui.Icon, -- lucide icon
+    Icon = PopoGui.Icon,
     Author = "by .bysuskhmer",
     Folder = folderName,
     Size = UDim2.fromOffset(PopoGui.SizeGui, PopoGui.SizeGui2),
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
-    Theme = "Crimson",
+    Theme = "Hacker",
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
@@ -334,152 +394,52 @@ task.spawn(function()
 end)
 
 Window:DisableTopbarButtons({
-    "Minimize", 
+    "Close", 
     "Fullscreen",
 })
-
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SmallTopLeftButton"
-screenGui.ResetOnSpawn = false 
-screenGui.Parent = playerGui
-
--- Container
-local container = Instance.new("Frame")
-container.Size = UDim2.new(0,100,0,50)
-container.Position = UDim2.new(0,10,0,10)
-container.BackgroundColor3 = Color3.fromRGB(50,50,50)
-container.BackgroundTransparency = 1
-container.Parent = screenGui
-
--- Button
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(1,0,1,0)
-button.Text = "Hide"
-button.TextScaled = true
-button.Font = Enum.Font.SourceSansBold
-button.BackgroundColor3 = Color3.fromRGB(0,0,0)
-button.TextColor3 = Color3.fromRGB(255,255,255)
-button.Parent = container
-button.Visible = true
-
--- Rounded corners
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0,10)
-corner.Parent = button
-
--- Rainbow text effect
-spawn(function()
-    local rainbowColors = {
-        Color3.fromRGB(255,0,0),
-        Color3.fromRGB(255,127,0),
-        Color3.fromRGB(255,255,0),
-        Color3.fromRGB(0,255,0),
-        Color3.fromRGB(0,0,255),
-        Color3.fromRGB(75,0,130),
-        Color3.fromRGB(148,0,211)
-    }
-    local i = 1
-    while true do
-        if button and button.Parent then
-            button.TextColor3 = rainbowColors[i]
-            i = i + 1
-            if i > #rainbowColors then i = 1 end
-        end
-        task.wait(0.1)
-    end
-end)
-
--- Toggle visibility when clicked
-
-local dragging = false
-local dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    container.Position = UDim2.new(
-        startPos.X.Scale, startPos.X.Offset + delta.X,
-        startPos.Y.Scale, startPos.Y.Offset + delta.Y
-    )
-end
-
-button.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = container.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-                -- snap to nearest horizontal edge
-                local viewportSize = workspace.CurrentCamera.ViewportSize
-                local snapX = (container.AbsolutePosition.X + container.AbsoluteSize.X/2 > viewportSize.X/2)
-                    and (viewportSize.X - container.AbsoluteSize.X - 10) or 10
-                local newPos = UDim2.new(0,snapX,0,math.clamp(container.AbsolutePosition.Y,10,viewportSize.Y-container.AbsoluteSize.Y-10))
-                TweenService:Create(container,TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Position=newPos}):Play()
-            end
-        end)
-    end
-end)
-
-button.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
-local ClickTimer = false
-
--- Click function
-button.MouseButton1Click:Connect(function()
-if button.Text == "Gui Destroyed" then
-
-else
-  if ClickTimer == false then
-    Window:Toggle()
-    ClickTimer = true
-    wait(0.7)
-    ClickTimer = false
-    else
-    button.Text = "Too fast"
-    end
- end
-end)
-
-Window:OnClose(function()
-    button.Text = "Show"
-end)
-
-Window:OnOpen(function()
-    button.Text = "Hide"
-end)
-
-Window:OnDestroy(function()
-    button.Text = "Gui Destroyed"
-end)
-
-Window:CreateTopbarButton("ShowToggle", "mouse-pointer-click",    function()
- button.Visible = not button.Visible
- end, 990)
 
 local isRunning = false 
 
 function run(scriptUrl)
-noti("Script Run")
-loadstring(game:HttpGet(scriptUrl))()
+    if isRunning then
+        noti("Script is already running...")
+        return
+    end
+    
+    local Dialog = Window:Dialog({
+        Icon = "shield-check",
+        Title = "Be careful when traveling.",
+        Content = "Some scripts are not recognized as safe.",
+        Buttons = {
+            {
+                Title = "Run",
+                Callback = function()
+                    isRunning = true
+                    local success, result = pcall(function()
+                        local scriptSource = game:HttpGet(scriptUrl)
+                        return loadstring(scriptSource)()
+                    end)
+
+                    if not success then
+                        noti("Error: " .. tostring(result))
+                        warn("Script Error:", result)
+                    else
+                        noti("Script Loaded Successfully")
+                    end
+
+                    isRunning = false
+                end,
+            },
+            {
+                Title = "Cancel",
+                Callback = function()
+                    print("Cancelled!")
+                    noti("Script cancelled.")
+                    isRunning = false
+                end,
+            },
+        },
+    })
 end
 
 local t1=Window:Tab({Title="Local Player",Icon="user",Locked=false})
@@ -622,28 +582,11 @@ local Toggle = t1:Toggle({
     end
 })
 
--- ► RunService Heartbeat (loop)
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local lplr = Players.LocalPlayer
-
-RunService.Heartbeat:Connect(function()
-    if ToggleTpwalk and getgenv().TPWalk then
-        local chr = lplr.Character
-        local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-        if chr and hum and hum.Parent then
-            if hum.MoveDirection.Magnitude > 0 then
-                -- បម្លែង Speed ជាអត្រាលេខ
-                local speed = tonumber(getgenv().TPSpeed) or 1
-                chr:TranslateBy(hum.MoveDirection * speed)
-            end
-        end
-    end
-end)
-
+-- Full Drawing API ESP with Team Check toggle
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
 --// VARIABLES
 local ESPEnabled = false
@@ -651,16 +594,20 @@ local ESPCategories = {"ESP USERNAME"}
 local ESPObjects = {}
 
 local defaultColor = Color3.fromRGB(255,0,0)
-local defaultFont = Enum.Font.SourceSans
+local defaultFontName = "UI" -- one of fontNames below
+local settings
 
-local settings -- defined outside if/else
+-- Fonts for Drawing API (limited)
+local fontNames = {"UI","System","Plex","Monospace"}
+local fontMap = { UI = 0, System = 1, Plex = 2, Monospace = 3 }
 
 --// SAVE/LOAD JSON FUNCTIONS
 local function SaveSettings()
     local saveData = {
         ESPTYPE = settings.ESPTYPE,
-        ESPCOLOR = {r = settings.ESPCOLOR.R, g = settings.ESPCOLOR.G, b = settings.ESPCOLOR.B},
-        ESPFONT = settings.ESPFONT.Name -- save only the font name
+        ESPCOLOR = { r = settings.ESPCOLOR.R, g = settings.ESPCOLOR.G, b = settings.ESPCOLOR.B },
+        ESPFONT = settings.ESPFONT, -- store font name string
+        TEAMCHECK = settings.TEAMCHECK and true or false
     }
     SaveFile("ESPSETTINGS.json", saveData)
 end
@@ -671,25 +618,171 @@ local function LoadSettings()
         settings = {
             ESPTYPE = dataSave.ESPTYPE or ESPCategories,
             ESPCOLOR = dataSave.ESPCOLOR and Color3.new(dataSave.ESPCOLOR.r, dataSave.ESPCOLOR.g, dataSave.ESPCOLOR.b) or defaultColor,
-            ESPFONT = dataSave.ESPFONT and Enum.Font[dataSave.ESPFONT] or defaultFont
+            ESPFONT = dataSave.ESPFONT or defaultFontName,
+            TEAMCHECK = dataSave.TEAMCHECK or false
         }
     else
         settings = {
             ESPTYPE = ESPCategories,
             ESPCOLOR = defaultColor,
-            ESPFONT = defaultFont
+            ESPFONT = defaultFontName,
+            TEAMCHECK = false
         }
         SaveSettings()
     end
 end
 
--- load initial settings
 LoadSettings()
 
-local selectedFont = settings.ESPFONT
+local selectedFontName = settings.ESPFONT
 local ESPColor = settings.ESPCOLOR
 
---// UI SECTION
+-- Helper: get color for a player (team check)
+local function GetPlayerColor(plr)
+    if settings.TEAMCHECK and plr and plr.Team and plr.TeamColor then
+        -- plr.TeamColor is a BrickColor; .Color returns Color3
+        return plr.TeamColor.Color
+    end
+    return ESPColor
+end
+
+--// Function to create ESP object (Drawing)
+local function CreateESP(plr)
+    if not plr or plr == LocalPlayer then return end
+    if ESPObjects[plr] then return end
+
+    local esp = {
+        Text = Drawing.new("Text"),
+        Box = Drawing.new("Square"),
+        Line = Drawing.new("Line")
+    }
+
+    -- Text
+    esp.Text.Size = 15
+    esp.Text.Color = GetPlayerColor(plr)
+    esp.Text.Center = true
+    esp.Text.Visible = false
+    esp.Text.Font = fontMap[selectedFontName] or 0
+
+    -- Box
+    esp.Box.Thickness = 1
+    esp.Box.Color = GetPlayerColor(plr)
+    esp.Box.Filled = false
+    esp.Box.Visible = false
+
+    -- Line (rope)
+    esp.Line.Thickness = 1
+    esp.Line.Color = GetPlayerColor(plr)
+    esp.Line.Visible = false
+
+    ESPObjects[plr] = esp
+end
+
+--// Remove ESP
+local function RemoveESP(plr)
+    local obj = ESPObjects[plr]
+    if obj then
+        for _,v in pairs(obj) do
+            if v and v.Remove then
+                pcall(function() v:Remove() end)
+            end
+        end
+        ESPObjects[plr] = nil
+    end
+end
+
+-- Clean up when player leaves
+Players.PlayerRemoving:Connect(function(plr)
+    RemoveESP(plr)
+end)
+
+--// Update Loop
+RunService.RenderStepped:Connect(function()
+    -- keep loop cheap if disabled
+    if not ESPEnabled then return end
+
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            CreateESP(plr)
+            local esp = ESPObjects[plr]
+            if not esp then continue end
+
+            local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+            local pos, onscreen = Camera:WorldToViewportPoint(hrp.Position)
+            if onscreen then
+                -- determine color (team or picker)
+                local color = GetPlayerColor(plr)
+                -- update font (in case changed)
+                esp.Text.Font = fontMap[selectedFontName] or 0
+
+                -- Username / Display / HP / Distance
+                local parts = {}
+                if table.find(settings.ESPTYPE, "ESP USERNAME") then table.insert(parts, plr.Name) end
+                if table.find(settings.ESPTYPE, "ESP DISPLAY") then table.insert(parts, "("..plr.DisplayName..")") end
+                if table.find(settings.ESPTYPE, "ESP HP") then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum then table.insert(parts, "["..math.floor(hum.Health).." HP]") end
+                end
+                if table.find(settings.ESPTYPE, "ESP DISTANCE") then
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local lpHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        local dist = (lpHRP.Position - hrp.Position).Magnitude
+                        table.insert(parts, "["..math.floor(dist).."m]")
+                    end
+                end
+
+                esp.Text.Text = table.concat(parts, " ")
+                esp.Text.Position = Vector2.new(pos.X, pos.Y - 30)
+                esp.Text.Color = color
+                esp.Text.Visible = true
+
+                -- Box
+                if table.find(settings.ESPTYPE, "ESP BOX") then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and plr.Character:FindFirstChild("Head") then
+                        local headPos = Camera:WorldToViewportPoint(plr.Character.Head.Position + Vector3.new(0,0.5,0))
+                        local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, hum.HipHeight or 1, 0))
+                        local height = math.abs(headPos.Y - legPos.Y)
+                        if height < 10 then height = 10 end
+                        local width = height / 2
+                        esp.Box.Size = Vector2.new(width, height)
+                        esp.Box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
+                        esp.Box.Color = color
+                        esp.Box.Visible = true
+                    else
+                        esp.Box.Visible = false
+                    end
+                else
+                    esp.Box.Visible = false
+                end
+
+                -- Rope/Line
+                if table.find(settings.ESPTYPE, "ESP ROPE") then
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local lpPos, lpOn = Camera:WorldToViewportPoint(LocalPlayer.Character.HumanoidRootPart.Position)
+                        esp.Line.From = Vector2.new(lpPos.X, lpPos.Y)
+                        esp.Line.To = Vector2.new(pos.X, pos.Y)
+                        esp.Line.Color = color
+                        esp.Line.Visible = true
+                    else
+                        esp.Line.Visible = false
+                    end
+                else
+                    esp.Line.Visible = false
+                end
+            else
+                esp.Text.Visible = false
+                esp.Box.Visible = false
+                esp.Line.Visible = false
+            end
+        else
+            -- no character -> remove esp
+            RemoveESP(plr)
+        end
+    end
+end)
+
+--// UI SECTION (assumes t1 UI lib available)
 local SectionESP = t1:Section({
     Title = "ESP | PLAYER",
     TextXAlignment = "Left",
@@ -703,10 +796,19 @@ t1:Toggle({
         ESPEnabled = state
         if not state then
             for plr,obj in pairs(ESPObjects) do
-                if obj and obj.Parent then obj:Destroy() end
+                RemoveESP(plr)
             end
             ESPObjects = {}
         end
+    end
+})
+
+-- Team Check Toggle
+t1:Toggle({
+    Title="Team Check (use team color if available)", Default = settings.TEAMCHECK,
+    Callback=function(state)
+        settings.TEAMCHECK = state
+        SaveSettings()
     end
 })
 
@@ -724,153 +826,209 @@ t1:Colorpicker({
 -- ESP Show Dropdown
 t1:Dropdown({
     Title="ESP SHOW",
-    Values={"ESP USERNAME","ESP DISPLAY","ESP HP"},
+    Values={"ESP USERNAME","ESP DISPLAY","ESP HP","ESP DISTANCE","ESP BOX","ESP ROPE"},
     Value=settings.ESPTYPE,
     Multi=true,
     Callback=function(option)
-        ESPCategories = option
         settings.ESPTYPE = option
         SaveSettings()
     end
 })
 
--- Get all Roblox fonts dynamically
-local fonts = {}
-for _, font in ipairs(Enum.Font:GetEnumItems()) do
-    table.insert(fonts, font.Name)
-end
-
--- Font Dropdown
+-- Font Dropdown (Drawing API fonts)
 t1:Dropdown({
     Title="ESP Font",
-    Values=fonts,
-    Value=selectedFont.Name, -- current font name
+    Values=fontNames,
+    Value = settings.ESPFONT,
     Multi=false,
     Callback=function(v)
-        if Enum.Font[v] then
-            selectedFont = Enum.Font[v]
-            settings.ESPFONT = selectedFont
+        if v and fontMap[v] then
+            selectedFontName = v
+            settings.ESPFONT = v
+            -- apply to existing ESP texts
+            for _,obj in pairs(ESPObjects) do
+                if obj and obj.Text then
+                    obj.Text.Font = fontMap[v]
+                end
+            end
             SaveSettings()
         end
     end
 })
 
---// FUNCTION CREATE ESP
-local function createESP(plr)
-    if plr == LocalPlayer then return end
-    if ESPObjects[plr] then ESPObjects[plr]:Destroy() end
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0,200,0,50)
-    billboard.Name = "ESP_"..plr.Name
-
-    local text = Instance.new("TextLabel", billboard)
-    text.Size = UDim2.new(1,0,1,0)
-    text.BackgroundTransparency = 1
-    text.TextColor3 = ESPColor
-    text.Font = selectedFont
-    text.TextScaled = true
-
-    ESPObjects[plr] = billboard
-
-    local function update()
-        local char = plr.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            billboard.Adornee = char:FindFirstChild("HumanoidRootPart")
-            local txts = {}
-            if table.find(ESPCategories,"ESP USERNAME") then table.insert(txts, plr.Name) end
-            if table.find(ESPCategories,"ESP DISPLAY") then table.insert(txts, plr.DisplayName) end
-            if table.find(ESPCategories,"ESP HP") then
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if hum then table.insert(txts, math.floor(hum.Health).." HP") end
-            end
-            text.Text = table.concat(txts," | ")
-            text.TextColor3 = ESPColor
-            text.Font = selectedFont
-        end
-    end
-
-    RunService.Heartbeat:Connect(function()
-        if ESPEnabled and ESPObjects[plr] then
-            update()
-            billboard.Parent = game:GetService("CoreGui")
-        elseif ESPObjects[plr] then
-            billboard.Parent = nil
-        end
-    end)
-end
-
---// HOOK EVENTS
-for _, plr in ipairs(Players:GetPlayers()) do
-    createESP(plr)
-end
-Players.PlayerAdded:Connect(createESP)
-Players.PlayerRemoving:Connect(function(plr)
-    if ESPObjects[plr] then ESPObjects[plr]:Destroy() ESPObjects[plr] = nil end
-end)
 
 local Section = t1:Section({ 
     Title = "Game | Font",
     TextXAlignment = "Left",
-    TextSize = 17, -- Default Size
+    TextSize = 17,
 })
 
--- Get all font names
---// Prepare font list
 local fontNames = {}
 for _, font in ipairs(Enum.Font:GetEnumItems()) do
-    table.insert(fontNames, font.Name)
+table.insert(fontNames, font.Name)
 end
 
 --// Check and create JSON file if not exists
 if not Check("FontSettings.json") then
-    local defaultFontName = fontNames[1] -- first font
-    local FontData = {
-        FontGV = defaultFontName
-    }
-    SaveFile("FontSettings.json", FontData)
+local defaultFontName = fontNames[1] -- first font
+local FontData = { FontGV = defaultFontName }
+SaveFile("FontSettings.json", FontData)
 end
 
 --// Load saved font
 local DATAFONT = LoadFile("FontSettings.json")
-local selectedFont = Enum.Font[DATAFONT.FontGV] or Enum.Font.SourceSans -- default safe
+local selectedFont = Enum.Font[DATAFONT.FontGV] or Enum.Font.SourceSans
 
---// Function to apply font to all GUI elements
-local function applyFont(fontEnum)
-    local player = game.Players.LocalPlayer
-    -- PlayerGui
-    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
-        if guiObj:IsA("TextLabel") or guiObj:IsA("TextButton") or guiObj:IsA("TextBox") then
-            guiObj.Font = fontEnum
-        end
-    end
-    -- Workspace (if you have Text objects in workspace)
-    for _, guiObj in ipairs(workspace:GetDescendants()) do
-        if guiObj:IsA("TextLabel") or guiObj:IsA("TextButton") or guiObj:IsA("TextBox") then
-            guiObj.Font = fontEnum
-        end
-    end
+--// Function to apply font to single object
+local function applyFontToObj(guiObj, fontEnum)
+if guiObj:IsA("TextLabel") or guiObj:IsA("TextButton") or guiObj:IsA("TextBox") then
+guiObj.Font = fontEnum
+end
 end
 
---// Apply saved font immediately
-applyFont(selectedFont)
+local function applyFont(fontEnum)
+local player = game.Players.LocalPlayer
+for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
+applyFontToObj(guiObj, fontEnum)
+end
+for _, guiObj in ipairs(workspace:GetDescendants()) do
+applyFontToObj(guiObj, fontEnum)
+end
+end
 
---// Create Dropdown UI
+local function setupAutoCheck(fontEnum)
+local player = game.Players.LocalPlayer
+player:WaitForChild("PlayerGui").DescendantAdded:Connect(function(obj)
+applyFontToObj(obj, fontEnum)
+end)
+workspace.DescendantAdded:Connect(function(obj)
+applyFontToObj(obj, fontEnum)
+end)
+end
+
+applyFont(selectedFont)
+setupAutoCheck(selectedFont)
+
+--// Dropdown UI
 local Dropdown = t1:Dropdown({
-    Title = "Select Font",
-    Values = fontNames,
-    Value = DATAFONT.FontGV, -- string name
-    Multi = false,
-    Callback = function(option)
-        local fontEnum = Enum.Font[option] or Enum.Font.SourceSans
-        selectedFont = fontEnum
-        applyFont(selectedFont)
-        -- save new selection
-        local FontData = {FontGV = option}
-        SaveFile("FontSettings.json", FontData)
+Title = "Select Font",
+Values = fontNames,
+Value = DATAFONT.FontGV,
+Multi = false,
+Callback = function(option)
+local fontEnum = Enum.Font[option] or Enum.Font.SourceSans
+selectedFont = fontEnum
+applyFont(selectedFont)
+setupAutoCheck(selectedFont) -- reapply listeners
+-- save new selection
+local FontData = { FontGV = option }
+SaveFile("FontSettings.json", FontData)
+end
+})
+
+local Section = t1:Section({ 
+    Title = "Notification",
+    TextXAlignment = "Left",
+    TextSize = 17,
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--// Get Avatar Image
+local function getAvatar(player)
+    local thumbnail, isReady = Players:GetUserThumbnailAsync(
+        player.UserId,
+        Enum.ThumbnailType.HeadShot,      -- ប្រភេទរូប (Head only)
+        Enum.ThumbnailSize.Size100x100    -- ទំហំ
+    )
+    return thumbnail
+end
+
+--// Function Notification Player
+local function notiPlayer(title, content, duration, icons)
+    pcall(function()
+        music("124951621656853") -- ចាក់សម្លេងប្រសិនបើមាន
+    end)
+
+    pcall(function()
+        WindUI:Notify({
+            Title = title or "",
+            Content = content or "",
+            Duration = duration or 3,
+            Icon = icons or "bell",
+        })
+    end)
+end
+
+--// Variables for Toggle States
+local notifyJoin = false
+local notifyLeave = false
+local notifyFriend = false
+
+--// TOGGLE Player Join
+local ToggleJoin = t1:Toggle({
+    Title = "Notification Player Join",
+    Desc = "Show when someone joins the game",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        notifyJoin = state
+        notiPlayer("Notification", "Player Join: " .. tostring(state), 2, "bell")
     end
 })
+
+--// TOGGLE Player Leave
+local ToggleLeave = t1:Toggle({
+    Title = "Notification Player Leave",
+    Desc = "Show when someone leaves the game",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        notifyLeave = state
+        notiPlayer("Notification", "Player Leave: " .. tostring(state), 2, "bell")
+    end
+})
+
+--// TOGGLE Friend Join/Leave
+local ToggleFriend = t1:Toggle({
+    Title = "Notification Friend Join and Leave",
+    Desc = "Notify when your friend joins or leaves",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        notifyFriend = state
+        notiPlayer("Notification", "Friend Join/Leave: " .. tostring(state), 2, "bell")
+    end
+})
+
+--// Player Join Event
+Players.PlayerAdded:Connect(function(player)
+    local avatar = getAvatar(player)
+
+    if notifyFriend and LocalPlayer:IsFriendsWith(player.UserId) then
+        notiPlayer("Friend Joined ✅", player.Name .. " joined the game.", 4, avatar)
+        return
+    end
+
+    if notifyJoin then
+        notiPlayer("Player Joined ✅", player.Name .. " joined the game.", 4, avatar)
+    end
+end)
+
+--// Player Leave Event
+Players.PlayerRemoving:Connect(function(player)
+    local avatar = getAvatar(player)
+
+    if notifyFriend and LocalPlayer:IsFriendsWith(player.UserId) then
+        notiPlayer("Friend Left ❌", player.Name .. " left the game.", 4, avatar)
+        return
+    end
+
+    if notifyLeave then
+        notiPlayer("Player Left ❌", player.Name .. " left the game.", 4, avatar)
+    end
+end)
 
 Window:SelectTab(1)
 
@@ -1710,7 +1868,6 @@ t6:Paragraph({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local afkBase, timerPart, timerLabel
 local afkTime = 0
@@ -1718,6 +1875,43 @@ local timerRunning = false
 local timerTask
 local savedCFrame = nil
 local antiAfkTask = nil
+
+-- Create 4 chairs with lights
+local function createChairs()
+    if not afkBase then return end
+
+    local basePos = afkBase.Position + Vector3.new(0, 1, 0) -- កៅអីនៅលើដី
+    local spacing = 8 -- ចន្លោះកៅអី
+
+    for i = 1, 4 do
+        -- Chair base
+        local chair = Instance.new("Part")
+        chair.Size = Vector3.new(4, 1, 4)
+        chair.Anchored = true
+        chair.Material = Enum.Material.Wood
+        chair.Color = Color3.fromRGB(139, 69, 19)
+        chair.Name = "AFK_Chair_"..i
+
+        local offset = Vector3.new((i-2.5) * spacing, 0, 0)
+        chair.Position = basePos + offset
+        chair.Parent = workspace
+
+        -- Seat
+        local seat = Instance.new("Seat")
+        seat.Size = Vector3.new(4, 1, 4)
+        seat.Anchored = true
+        seat.Position = chair.Position + Vector3.new(0, 1, 0)
+        seat.Name = "Seat_"..i
+        seat.Parent = workspace
+
+        -- Light
+        local light = Instance.new("PointLight")
+        light.Brightness = 2
+        light.Range = 15
+        light.Color = Color3.fromRGB(255, 200, 150)
+        light.Parent = seat
+    end
+end
 
 -- Create AFK Base + Timer
 local function createAFKBase()
@@ -1752,12 +1946,21 @@ local function createAFKBase()
     timerLabel.TextScaled = true
     timerLabel.Text = "AFK Timer: 0s"
     timerLabel.Parent = billboard
+
+    -- Add chairs
+    createChairs()
 end
 
 -- Destroy AFK Base + Timer
 local function destroyAFKBase()
     if afkBase then afkBase:Destroy() end
     if timerPart then timerPart:Destroy() end
+    -- Clear chairs
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj.Name:match("AFK_Chair_") or obj.Name:match("Seat_") then
+            obj:Destroy()
+        end
+    end
     afkBase, timerPart, timerLabel = nil, nil, nil
     afkTime = 0
     timerRunning = false
@@ -1782,6 +1985,7 @@ local function stopTimer()
     timerTask = nil
 end
 
+-- Anti AFK Jump
 local function startAntiAfkJump()
     antiAfkTask = task.spawn(function()
         while true do
@@ -1807,19 +2011,19 @@ local Toggle = t6:Toggle({
     Default = false,
     Callback = function(state)
         if state then
-            -- Save current position
+            -- Save position
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 savedCFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
             end
             createAFKBase()
-            -- Teleport to AFK Base
+            -- Teleport player
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = afkBase.CFrame + Vector3.new(0,5,0)
             end
             startTimer()
             startAntiAfkJump()
         else
-            -- Teleport back to saved position
+            -- Back to position
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and savedCFrame then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = savedCFrame
             end
@@ -1871,6 +2075,48 @@ local ToggleRejoin = safe:Toggle({
         Safe.AllowRejoin = state        -- update Safe
         SaveFile("SystemSafe.json", Safe)  -- save changes
     end
+})
+
+local info = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
+
+local Paragraph = info:Paragraph({
+    Title = "What New Updates : " .. VersionRoot,
+    Desc = MessageeWhatNew,
+    Locked = false,
+})
+
+local Section = info:Section({ 
+    Title = "Support",
+    TextXAlignment = "Left",
+    TextSize = 30, -- Default Size
+})
+
+local Paragraph = info:Paragraph({
+    Title = "@bysuskhmer",
+    Desc = "Owner Script",
+    Locked = false,
+})
+
+local Paragraph = info:Paragraph({
+    Title = "@X_Mobile",
+    Desc = "Co Owner Script",
+    Locked = false,
+})
+
+local Paragraph = info:Paragraph({
+    Title = "WindUI",
+    Desc = "https://footagesus.github.io/WindUI-Docs/docs/load-windui",
+    Locked = false,
+})
+
+local Paragraph = info:Paragraph({
+    Title = "Infinite Yield",
+    Desc = "https://github.com/DarkNetworks/Infinite-Yield",
+    Locked = false,
 })
 
 	local s1 = Window:Tab({Title = "Settings", Icon = "settings",  Locked = false })
@@ -1927,7 +2173,7 @@ DataKI = LoadFile("Theme.json")
 WindUI:SetTheme(DataKI.Theme)
 else
  DataKI = {
-   Theme = "Crimson"
+   Theme = "Hacker"
 }
 
 SaveFile("Theme.json", DataKI)
@@ -1941,7 +2187,7 @@ local themeDropdown = s1:Dropdown({
     Values = themes,
     SearchBarEnabled = true,
     MenuWidth = 280,
-    Value = DataKI.Theme or "Crimson",
+    Value = DataKI.Theme or "Hacker",
     Callback = function(theme)
         canchangedropdown = false
         WindUI:SetTheme(theme)
@@ -2002,6 +2248,13 @@ WindUI:Popup({
         }
     }
 })
+
 end
 
-Mobile()
+local success, result = pcall(function()
+    PoppHubCom()
+end)
+
+noti("Success: " .. tostring(success))  
+
+noti("Result: " .. tostring(result))
