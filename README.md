@@ -1,5 +1,5 @@
 # 🥷 PopoHub
-**Script Popo Key System:)**  
+**Script Popo No Key System:)**  
 
 🔒 This is the **Original Popo Script**  
 ⚠️ Do not re-upload / sell without permission  
@@ -7,29 +7,16 @@
 ---
 
 ## 📥 Get Script 
-- Last version 
 ```Lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/POPO%201.0.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/4f0nLhdFMhn6fG5mMcc21tUJ3qd1px94ZJ7Yjct34biH2PgdkwQjKeX9967jyV7c.lua.txt"))()
 ```
-
----
-
-- Version
-```Lua
-local Version = 1.0
-loadstring(game:HttpGet("https://raw.githubusercontent.com/bysuskhmerReal/PopoHub/refs/heads/main/PopoHub/POPO%20" .. tostring(Version) .. ".txt"))()
-```
-
----
-
-📜 [View All Versions](https://github.com/bysuskhmerReal/mokren/blob/main/Versionhistory.md)
 
 ---
 
 ## ⚠️ Note
 - Beware of fake skid steers
-- Mokren Will pull IP You to create a table ranker
-- Mokren Use may be roblox Your account is banned, please use a new account.
+- Popo Will pull IP You to create a table ranker
+- Popo Use may be roblox Your account is banned, please use a new account.
 
 ## Contact
 
